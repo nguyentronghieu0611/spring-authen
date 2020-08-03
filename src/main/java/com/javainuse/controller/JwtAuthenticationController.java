@@ -2,6 +2,7 @@ package com.javainuse.controller;
 
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
@@ -53,11 +54,13 @@ public class JwtAuthenticationController {
 
 			final String token = jwtTokenUtil.generateToken(userDetails);
 			final Date expired_time = jwtTokenUtil.getExpirationDateFromToken(token);
+			SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
+			String strDate = formatter.format(expired_time);
 
 			System.out.print("current date:-------------" + new Date(System.currentTimeMillis()));
 			System.out.println("expired date:-------------" + expired_time);
 
-			return ResponseEntity.ok(new LoginResponse(token, 0, expired_time));
+			return ResponseEntity.ok(new LoginResponse(token, 0, strDate));
 		} 
 		catch(Exception e) {
 			return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(),1));

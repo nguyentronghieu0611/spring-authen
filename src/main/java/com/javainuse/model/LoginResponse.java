@@ -4,27 +4,27 @@ import java.util.Date;
 
 public class LoginResponse {
 
-    private String token;
+	private String token;
 
-    private int err_code;
-    
-    private Date expired_time;
+	private int err_code;
 
-    // Constructor, getters and setters omitted
-    
-    public Date getExpired_time() {
+	private String expired_time;
+
+	// Constructor, getters and setters omitted
+
+	public String getExpired_time() {
 		return expired_time;
 	}
 
-	public void setExpired_time(Date expired_time) {
+	public void setExpired_time(String expired_time) {
 		this.expired_time = expired_time;
 	}
 
-	public LoginResponse(String token, int err_code, Date expired_time) {
-    	this.token=token;
-    	this.err_code=err_code;
-    	this.expired_time = expired_time;
-    }
+	public LoginResponse(String token, int err_code, String expired_time) {
+		this.token=token;
+		this.err_code=err_code;
+		this.expired_time = expired_time;
+	}
 
 	public String getToken() {
 		return token;
@@ -41,6 +41,6 @@ public class LoginResponse {
 	public void setErr_code(int err_code) {
 		this.err_code = err_code;
 	}
-    
-    
+
+
 }

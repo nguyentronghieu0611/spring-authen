@@ -3,11 +3,10 @@ package com.javainuse.config;
 import java.io.IOException;
 import java.io.Serializable;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.jettison.json.JSONObject;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException authException) throws IOException {
-		Gson gson = new Gson();
-		response.setContentType("application/json");
-		response.setStatus(HttpServletResponse.SC_OK);
-		response.getOutputStream().println(gson.toJson(new Response("Xác thực không thành công!",1)));
+		response.setContentType("application/json; charset=UTF-8");
+		response.setCharacterEncoding("UTF-8");
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		ServletOutputStream out = response.getOutputStream();
+		out.write("{\"err_code\":1,\"message\":\"Xác thực thất bại!\"}".getBytes("UTF-8"));
 	}
 }
