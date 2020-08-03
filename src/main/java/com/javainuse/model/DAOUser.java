@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "user")
+//cấu hình tên bảng
+@Table(name = "user_new")
 public class DAOUser {
 
+	//Khai báo trường id tự động tăng
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name = "ID")
 	private long id;
 	@Column
 	private String username;

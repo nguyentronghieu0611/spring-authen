@@ -1,10 +1,15 @@
 package com.javainuse.controller;
 
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.Objects;
 
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -53,25 +58,31 @@ public class JwtAuthenticationController {
 			System.out.println("expired date:-------------" + expired_time);
 
 			return ResponseEntity.ok(new LoginResponse(token, 0, expired_time));
-		} catch (Exception e) {
+		} 
+		catch(Exception e) {
 			return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(),1));
 		}
 	}
 
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
-		userDetailsService.save(user);
-		return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
+	public ResponseEntity<?> saveUser(@RequestBody UserDTO user) {
+		try {
+			userDetailsService.save(user);
+			return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
+		}
+		catch(Exception e) {
+			return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(),1));
+		}
 	}
 
 	private void authenticate(String username, String password) throws Exception {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		} catch (DisabledException e) {
-			throw new Exception("tài khoản vô hiệu hóa!", e);
+			throw new Exception("Tài khoản vô hiệu hóa!", e);
 		} catch (BadCredentialsException e) {
-			throw new Exception("xác thực không hợp lệ!", e);
+			throw new Exception("Xác thực không hợp lệ!", e);
 		}
 	}
 }
