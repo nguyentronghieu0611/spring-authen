@@ -29,15 +29,15 @@ public class JwtUserDetailsService implements UserDetailsService {
 		if (user == null) {
 			throw new UsernameNotFoundException("user không tồn tại");
 		}
-		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword_encoded(),
+		return new org.springframework.security.core.userdetails.User(user.getUser_name(), user.getUser_pwd(),
 				new ArrayList<>());
 	}
 	
 	public DAOUser save(UserDTO user) {
 		DAOUser newUser = new DAOUser();
-		newUser.setUsername(user.getUsername());
-		newUser.setPassword(user.getPassword());
-		newUser.setPassword_encoded(bcryptEncoder.encode(user.getPassword()));
+		newUser.setUser_name(user.getUsername());
+		newUser.setUser_pwd(user.getPassword());
+		newUser.setUser_pwd_encoded(bcryptEncoder.encode(user.getPassword()));
 		return userDao.save(newUser);
 	}
 }
