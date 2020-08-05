@@ -1,4 +1,4 @@
-package com.javainuse.model;
+package com.bnv.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

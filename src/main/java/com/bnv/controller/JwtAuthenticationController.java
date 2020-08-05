@@ -1,4 +1,4 @@
-package com.javainuse.controller;
+package com.bnv.controller;
 
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import com.javainuse.service.JwtUserDetailsService;
+import com.bnv.service.JwtUserDetailsService;
 
-import com.javainuse.config.JwtTokenUtil;
-import com.javainuse.model.JwtRequest;
-import com.javainuse.model.JwtResponse;
-import com.javainuse.model.LoginResponse;
-import com.javainuse.model.Response;
-import com.javainuse.model.UserDTO;
+import com.bnv.config.JwtTokenUtil;
+import com.bnv.model.JwtRequest;
+import com.bnv.model.JwtResponse;
+import com.bnv.model.LoginResponse;
+import com.bnv.model.Response;
+import com.bnv.model.UserDTO;
 
 @RestController
 @CrossOrigin

@@ -1,4 +1,4 @@
-package com.javainuse.service;
+package com.bnv.service;
 
 import java.util.ArrayList;
 
@@ -10,9 +10,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.javainuse.dao.UserDao;
-import com.javainuse.model.DAOUser;
-import com.javainuse.model.UserDTO;
+import com.bnv.dao.UserDao;
+import com.bnv.model.DAOUser;
+import com.bnv.model.UserDTO;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {

@@ -1,4 +1,4 @@
-package com.javainuse.config;
+package com.bnv.config;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.javainuse.model.Response;
+import com.bnv.model.Response;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Serializable {

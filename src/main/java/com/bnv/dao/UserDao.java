@@ -1,9 +1,9 @@
-package com.javainuse.dao;
+package com.bnv.dao;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.javainuse.model.DAOUser;
+import com.bnv.model.DAOUser;
 
 @Repository
 public interface UserDao extends CrudRepository<DAOUser, Integer> {

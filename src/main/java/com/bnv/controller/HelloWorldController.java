@@ -1,4 +1,4 @@
-package com.javainuse.controller;
+package com.bnv.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.javainuse.model.LoginResponse;
-import com.javainuse.model.Response;
+import com.bnv.model.LoginResponse;
+import com.bnv.model.Response;
 
 @RestController
 public class HelloWorldController {
