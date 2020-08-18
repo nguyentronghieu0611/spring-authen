@@ -49,7 +49,7 @@ public class MsgController {
 
             Response response = null;
             String nhansu_id = null;
-            String madonvi = body.get("donviid");
+            String madonvi = body.get("org_Code");
             String strJson = body.get("jsonContent");
             byte[] decoded = Base64.decodeBase64(strJson);
             String strJsonDecode = new String(decoded, "UTF-8");
@@ -59,17 +59,14 @@ public class MsgController {
             JSONObject header = data.getJSONObject("Header");
 
             // thêm mới vào bảng header
-            //response = getstoreProcedure(_header, madonvi, header.toString());
-            String thresponse = admUserRepository.Longdv("sfdsfs",header.toString());
+            response = getstoreProcedure(_header, madonvi, header.toString());
             if (response.getErr_code() == 1)
                 return (ResponseEntity<?>) ResponseEntity.ok(new Response(response.getMessage(), response.getErr_code()));
 
             JSONObject Body = data.getJSONObject("Body");
             JSONObject hoso_cbccvc = Body.getJSONObject("HOSO_CBCCVC");
 
-
             JSONObject thongtinchung = hoso_cbccvc.getJSONObject("THONGTINCHUNG");
-
             //kiểm tra và tạo mã số hiệu cán bộ bộ ngành địa phương
             String soHieucbccvc = thongtinchung.getString("SoHieuCBCCVC");
             if (soHieucbccvc == null || soHieucbccvc.isEmpty())

@@ -8,14 +8,11 @@
 package com.bnv.repository;
 
 import com.bnv.model.DAOUser;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.bnv.model.DAOUser;
 
 import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
@@ -26,12 +23,13 @@ import javax.transaction.Transactional;
 //@ComponentScan("com.vnpt.auth.entity")
 public interface AdmUserRepository extends JpaRepository<DAOUser, Long> {
 
+	@Transactional
+	@Procedure(name="PKG_PARSE_JSON.GET_TOTAL_CARS_BY_MODEL")
+	int createUser(@Param("i_json")String i_jsons);
 
-
-	@Procedure(procedureName = "pkg_parse_json.parse_header_json", outputParameterName="u_ret")
-	String Longdv(@Param("i_madonvi" ) String i_madonvi, @Param("i_json" ) String i_json);
-
-
+	@Transactional
+	@Procedure(procedureName = "PKG_PARSE_JSON.GET_TOTAL_CARS_BY_MODEL", outputParameterName = "u_ret")
+	int findUserFullNameIn_OutUsingName(@Param("i_json") String in);
 
     @Query(value = "SELECT pkg_parse_json.parse_header_json(:i_madonvi, :i_json) FROM dual", nativeQuery = true)
     String FunctionServiceHeader(@Param("i_madonvi" ) String i_madonvi, @Param("i_json" ) String i_json);
