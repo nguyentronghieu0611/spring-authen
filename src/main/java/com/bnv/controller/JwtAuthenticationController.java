@@ -33,59 +33,61 @@ import com.bnv.model.UserDTO;
 
 @RestController
 @CrossOrigin
+@RequestMapping("/authen")
 public class JwtAuthenticationController {
 
-	@Autowired
-	private AuthenticationManager authenticationManager;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-	@Autowired
-	private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
-	@Autowired
-	private JwtUserDetailsService userDetailsService;
+    @Autowired
+    private JwtUserDetailsService userDetailsService;
 
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	@ResponseBody
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) {
-		try {
-			authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) {
+        try {
+            authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
-			final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
 
-			final String token = jwtTokenUtil.generateToken(userDetails);
-			final Date expired_time = jwtTokenUtil.getExpirationDateFromToken(token);
-			SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
-			String strDate = formatter.format(expired_time);
+            final String token = jwtTokenUtil.generateToken(userDetails);
+            final Date expired_time = jwtTokenUtil.getExpirationDateFromToken(token);
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
+            String strDate = formatter.format(expired_time);
 
-			System.out.print("current date:-------------" + new Date(System.currentTimeMillis()));
-			System.out.println("expired date:-------------" + expired_time);
+            System.out.print("current date:-------------" + new Date(System.currentTimeMillis()));
+            System.out.println("expired date:-------------" + expired_time);
 
-			return ResponseEntity.ok(new LoginResponse(token, 0, strDate));
-		} 
-		catch(Exception e) {
-			return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(),1));
-		}
-	}
+            return ResponseEntity.ok(new LoginResponse(token, 0, strDate));
+        } catch (Exception e) {
+            return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(), 1));
+        }
+    }
 
-	@RequestMapping(value = "/register", method = RequestMethod.POST)
-	@ResponseBody
-	public ResponseEntity<?> saveUser(@RequestBody UserDTO user) {
-		try {
-			userDetailsService.save(user);
-			return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
-		}
-		catch(Exception e) {
-			return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(),1));
-		}
-	}
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<?> saveUser(@RequestBody UserDTO user) {
+        try {
+            userDetailsService.save(user);
+            return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
+        } catch (Exception e) {
+            if (e.getMessage().toLowerCase().contains("constraint"))
+                return (ResponseEntity<?>) ResponseEntity.ok(new Response("Tên tài khoản đã được sử dụng!", 1));
+            else
+                return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(), 1));
+        }
+    }
 
-	private void authenticate(String username, String password) throws Exception {
-		try {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-		} catch (DisabledException e) {
-			throw new Exception("Tài khoản vô hiệu hóa!", e);
-		} catch (BadCredentialsException e) {
-			throw new Exception("Xác thực không hợp lệ!", e);
-		}
-	}
+    private void authenticate(String username, String password) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        } catch (DisabledException e) {
+            throw new Exception("Tài khoản vô hiệu hóa!", e);
+        } catch (BadCredentialsException e) {
+            throw new Exception("Xác thực không hợp lệ!", e);
+        }
+    }
 }

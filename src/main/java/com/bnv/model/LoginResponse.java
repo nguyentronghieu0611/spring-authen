@@ -1,10 +1,9 @@
 package com.bnv.model;
 
-import java.util.Date;
 
 public class LoginResponse {
 
-	private String token;
+	private String access_token;
 
 	private int err_code;
 
@@ -20,18 +19,18 @@ public class LoginResponse {
 		this.expired_time = expired_time;
 	}
 
-	public LoginResponse(String token, int err_code, String expired_time) {
-		this.token=token;
+	public LoginResponse(String access_token, int err_code, String expired_time) {
+		this.access_token=access_token;
 		this.err_code=err_code;
 		this.expired_time = expired_time;
 	}
 
 	public String getToken() {
-		return token;
+		return access_token;
 	}
 
-	public void setToken(String token) {
-		this.token = token;
+	public void setToken(String access_token) {
+		this.access_token = access_token;
 	}
 
 	public int getErr_code() {

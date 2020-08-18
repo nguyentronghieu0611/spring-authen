@@ -29,7 +29,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 		if (user == null) {
 			throw new UsernameNotFoundException("user không tồn tại");
 		}
-		return new org.springframework.security.core.userdetails.User(user.getUser_name(), user.getUser_pwd(),
+		return new org.springframework.security.core.userdetails.User(user.getUser_name(), user.getUser_pwd_encoded(),
 				new ArrayList<>());
 	}
 	
