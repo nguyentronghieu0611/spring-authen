@@ -33,7 +33,7 @@ import com.bnv.model.UserDTO;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/authen")
+@RequestMapping("/ApiAuth/oauth")
 public class JwtAuthenticationController {
 
     @Autowired
