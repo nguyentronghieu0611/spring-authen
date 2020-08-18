@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
+import com.bnv.model.*;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,11 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bnv.service.JwtUserDetailsService;
 
 import com.bnv.config.JwtTokenUtil;
-import com.bnv.model.JwtRequest;
-import com.bnv.model.JwtResponse;
-import com.bnv.model.LoginResponse;
-import com.bnv.model.Response;
-import com.bnv.model.UserDTO;
 
 @RestController
 @CrossOrigin
@@ -81,13 +78,34 @@ public class JwtAuthenticationController {
         }
     }
 
+    @RequestMapping(value = "/changepassword", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<?> updateUser(@RequestBody ChangepassModel model) {
+        try {
+            authenticate(model.getUsername(), model.getCurrent_password());
+            if(!model.getNew_password().equals(model.getCurrent_password())){
+                if(model.getNew_password().equals(model.getRetype_password())){
+                    userDetailsService.updateUser(model);
+                    return ResponseEntity.ok(new Response("Đổi mật khẩu thành công!", 0));
+                }
+                else
+                    return ResponseEntity.ok(new Response("Mật khẩu không trùng khớp!", 1));
+            }
+            else
+                return ResponseEntity.ok(new Response("Mật khẩu mới phải khác mật khẩu hiện tại!", 1));
+
+        } catch (Exception e) {
+            return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(), 1));
+        }
+    }
+
     private void authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         } catch (DisabledException e) {
             throw new Exception("Tài khoản vô hiệu hóa!", e);
         } catch (BadCredentialsException e) {
-            throw new Exception("Xác thực không hợp lệ!", e);
+            throw new Exception("Xác thực không thành công!", e);
         }
     }
 }
