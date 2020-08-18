@@ -8,11 +8,11 @@ public class Response {
 
 	// Constructor, getters and setters omitted
 
-	public Response(String message, int err_code, String value) {
-		this.message=message;
-		this.err_code=err_code;
-		this.value=value;
-	}
+//	public Response(String message, int err_code, String value) {
+//		this.message=message;
+//		this.err_code=err_code;
+//		this.value=value;
+//	}
 
     public Response(String message, int err_code) {
         this.message=message;
