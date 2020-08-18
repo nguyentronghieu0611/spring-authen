@@ -30,7 +30,7 @@ import com.bnv.config.JwtTokenUtil;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/authen")
+@RequestMapping("/ApiAuth/oauth")
 public class JwtAuthenticationController {
 
     @Autowired
@@ -55,8 +55,8 @@ public class JwtAuthenticationController {
             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
             String strDate = formatter.format(expired_time);
 
-            System.out.print("current date:-------------" + new Date(System.currentTimeMillis()));
-            System.out.println("expired date:-------------" + expired_time);
+            System.out.println("---------------------current date: " + new Date(System.currentTimeMillis()));
+            System.out.println("---------------------expired date: " + expired_time);
 
             return ResponseEntity.ok(new LoginResponse(token, 0, strDate));
         } catch (Exception e) {

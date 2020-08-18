@@ -53,7 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		// We don't need CSRF for this example
 		httpSecurity.csrf().disable()
 				// những request không cần authen
-				.authorizeRequests().antMatchers("/authen/**").permitAll().
+				.authorizeRequests().antMatchers("/ApiAuth/oauth/**").permitAll().
 				// các request còn lại cần authen
 				anyRequest().authenticated().and().
 				// make sure we use stateless session; session won't be used to
