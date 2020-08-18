@@ -2,6 +2,7 @@ package com.bnv.service;
 
 import java.util.ArrayList;
 
+import com.bnv.model.ChangepassModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,5 +40,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 		newUser.setUser_pwd(user.getPassword());
 		newUser.setUser_pwd_encoded(bcryptEncoder.encode(user.getPassword()));
 		return userDao.save(newUser);
+	}
+
+	public void updateUser(ChangepassModel model){
+		userDao.updatePasswordUser(model.getNew_password(),bcryptEncoder.encode(model.getNew_password()),model.getUsername());
 	}
 }
