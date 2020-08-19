@@ -2,6 +2,7 @@ package com.bnv.controller;
 
 import com.bnv.model.Response;
 import com.bnv.repository.AdmUserRepository;
+import com.bnv.service.SyncMsgService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
@@ -219,7 +220,7 @@ public class SyncMsg {
     // xử lý json trả về
     public static Response getstoreProcedure(String storename, String madonvi, String json) {
         try {
-            JSONObject retjson = new JSONObject(callStoreProcedure(storename, madonvi, json));
+            JSONObject retjson = new JSONObject(SyncMsgService.callStoreProcedure(storename, madonvi, json));
             String mess = retjson.getString("MSG_TEXT");
             int err = retjson.getInt("MSG_CODE");
             String value = retjson.getString("VAL");
@@ -229,24 +230,5 @@ public class SyncMsg {
         }
     }
 
-    // gọi thủ tục trong sql
-    public static String callStoreProcedure(String storeProcedureName, String i_madonvi, String i_json) {
-        try {
-            StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery(storeProcedureName);
-            storedProcedure.registerStoredProcedureParameter("i_madonvi", String.class, ParameterMode.IN);
-            storedProcedure.registerStoredProcedureParameter("i_json", String.class, ParameterMode.IN);
-            storedProcedure.registerStoredProcedureParameter("u_ret", String.class, ParameterMode.OUT);
-            storedProcedure.setParameter("i_madonvi", i_madonvi);
-            storedProcedure.setParameter("i_json", i_json);
-            storedProcedure.execute();
-            String outMessage = (String) storedProcedure.getOutputParameterValue("u_ret");
 
-            System.out.println("---------------------input \n" + i_json.toString());
-            System.out.println("---------------------output \n" + outMessage.toString());
-
-            return outMessage.toString();
-        } catch (Exception ex) {
-            return ex.getMessage();
-        }
-    }
 }
