@@ -6,6 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 
+import javax.persistence.EntityManager;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureQuery;
+
 public class SyncMsg {
     private static String _header = "pkg_parse_json.parse_header_json";
     private static String _ns_thongtinchung = "pkg_parse_json.parse_ns_thongtinchung_json";
@@ -21,6 +25,7 @@ public class SyncMsg {
     private static String _ns_thongtinkhac = "pkg_parse_json.parse_ns_thongtinkhac_json";
     private static String _danhgiaphanloai = "pkg_parse_json.parse_danhgiaphanloai_json";
     private static String _xoahosonhansu = "pkg_parse_json.parse_ns_xoahosonhansu_json";
+
 
     //thông tin chung
     public static Response setThongtinchung(JSONObject thongtinchung, String madonvi, String sohieucbccvc_bndp) {
@@ -214,13 +219,34 @@ public class SyncMsg {
     // xử lý json trả về
     public static Response getstoreProcedure(String storename, String madonvi, String json) {
         try {
-            JSONObject retjson = new JSONObject(AdmUserRepository.callStoreProcedure(storename, madonvi, json));
+            JSONObject retjson = new JSONObject(callStoreProcedure(storename, madonvi, json));
             String mess = retjson.getString("MSG_TEXT");
             int err = retjson.getInt("MSG_CODE");
             String value = retjson.getString("VAL");
             return new Response(mess, err == 1 ? 0 : 1);
         } catch (Exception ex) {
             return new Response(ex.getMessage(), 1);
+        }
+    }
+
+    // gọi thủ tục trong sql
+    public static String callStoreProcedure(String storeProcedureName, String i_madonvi, String i_json) {
+        try {
+            StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery(storeProcedureName);
+            storedProcedure.registerStoredProcedureParameter("i_madonvi", String.class, ParameterMode.IN);
+            storedProcedure.registerStoredProcedureParameter("i_json", String.class, ParameterMode.IN);
+            storedProcedure.registerStoredProcedureParameter("u_ret", String.class, ParameterMode.OUT);
+            storedProcedure.setParameter("i_madonvi", i_madonvi);
+            storedProcedure.setParameter("i_json", i_json);
+            storedProcedure.execute();
+            String outMessage = (String) storedProcedure.getOutputParameterValue("u_ret");
+
+            System.out.println("---------------------input \n" + i_json.toString());
+            System.out.println("---------------------output \n" + outMessage.toString());
+
+            return outMessage.toString();
+        } catch (Exception ex) {
+            return ex.getMessage();
         }
     }
 }
