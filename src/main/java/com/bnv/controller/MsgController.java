@@ -20,6 +20,9 @@ public class MsgController {
     @Autowired
     AdmUserRepository admUserRepository;
 
+    @Autowired
+    SyncMsg syncMsg;
+
     private static String _header = "pkg_parse_json.parse_header_json";
     private static String _ns_thongtinchung = "pkg_parse_json.parse_ns_thongtinchung_json";
     private static String _ns_tuyendungquatrinhcongtac = "pkg_parse_json.parse_ns_tuyendung_qtct_json";
@@ -35,7 +38,6 @@ public class MsgController {
     private static String _danhgiaphanloai = "pkg_parse_json.parse_danhgiaphanloai_json";
     private static String _xoahosonhansu = "pkg_parse_json.parse_ns_xoahosonhansu_json";
 
-    public SyncMsg syncMsg = null;
     // Thông điệp thêm mới hồ sơ CBCCVC vào hệ thống
     @RequestMapping("/ServiceM0001")
     public ResponseEntity<?> ServiceM0001_01(@RequestBody Map<String, String> body) {
@@ -53,7 +55,7 @@ public class MsgController {
             JSONObject header = data.getJSONObject("Header");
 
             // thêm mới vào bảng header
-            response = SyncMsg.getstoreProcedure(_header, madonvi, header.toString());
+            response = syncMsg.getstoreProcedure(_header, madonvi, header.toString());
             if (response.getErr_code() == 1)
                 return ResponseEntity.ok(new Response(response.getMessage(), response.getErr_code()));
 

@@ -11,7 +11,8 @@ import java.util.List;
 public class HelloService {
     @Autowired
     HelloRepository helloRepository;
-    public List<DAOUser> getData(){
+
+    public List<Object> getData(){
         return helloRepository.getAll();
     }
 
