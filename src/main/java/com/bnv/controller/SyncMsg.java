@@ -1,16 +1,14 @@
 package com.bnv.controller;
 
 import com.bnv.model.Response;
-import com.bnv.repository.AdmUserRepository;
 import com.bnv.service.SyncMsgService;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.ParameterMode;
-import javax.persistence.StoredProcedureQuery;
-
+@Service
 public class SyncMsg {
     private static String _header = "pkg_parse_json.parse_header_json";
     private static String _ns_thongtinchung = "pkg_parse_json.parse_ns_thongtinchung_json";
@@ -27,9 +25,11 @@ public class SyncMsg {
     private static String _danhgiaphanloai = "pkg_parse_json.parse_danhgiaphanloai_json";
     private static String _xoahosonhansu = "pkg_parse_json.parse_ns_xoahosonhansu_json";
 
+    @Autowired
+    SyncMsgService syncMsgService;
 
     //thông tin chung
-    public static Response setThongtinchung(JSONObject thongtinchung, String madonvi, String sohieucbccvc_bndp) {
+    public Response setThongtinchung(JSONObject thongtinchung, String madonvi, String sohieucbccvc_bndp) {
         Response response = null;
         try {
             thongtinchung.put("SoHieuCBCCVC_BNDP", sohieucbccvc_bndp);
@@ -41,7 +41,7 @@ public class SyncMsg {
     }
 
     //tuyển dụng, quá trình công tác
-    public static Response setTuyendungquatrinhcongtac(JSONObject tuyendungquatrinhcongtac, String madonvi, String nhansu_id) {
+    public Response setTuyendungquatrinhcongtac(JSONObject tuyendungquatrinhcongtac, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             tuyendungquatrinhcongtac.put("NhanSu_Id", nhansu_id);
@@ -53,7 +53,7 @@ public class SyncMsg {
     }
 
     //quá trình công tác
-    public static Response setQuatrinhcongtacs(JSONArray quatrinhcongtacs, String madonvi, String nhansu_id) {
+    public Response setQuatrinhcongtacs(JSONArray quatrinhcongtacs, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < quatrinhcongtacs.length(); i++) {
@@ -70,7 +70,7 @@ public class SyncMsg {
     }
 
     //luong phụ cấp chức vụ
-    public static Response setLuongphucapchucvu(JSONObject luongphucapchucvu, String madonvi, String nhansu_id) {
+    public Response setLuongphucapchucvu(JSONObject luongphucapchucvu, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             luongphucapchucvu.put("NhanSu_Id", nhansu_id);
@@ -82,7 +82,7 @@ public class SyncMsg {
     }
 
     //quá trình phụ cấp
-    public static Response setQuatrinhphucap(JSONArray quatrinhphucaps, String madonvi, String nhansu_id) {
+    public Response setQuatrinhphucap(JSONArray quatrinhphucaps, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < quatrinhphucaps.length(); i++) {
@@ -99,7 +99,7 @@ public class SyncMsg {
     }
 
     //qua trình lương
-    public static Response setQuatrinhluong(JSONArray quatrinhluongs, String madonvi, String nhansu_id) {
+    public Response setQuatrinhluong(JSONArray quatrinhluongs, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < quatrinhluongs.length(); i++) {
@@ -116,7 +116,7 @@ public class SyncMsg {
     }
 
     //đào tạo bồi dưỡng
-    public static Response setDaotaoboiduong(JSONObject daotaoboiduong, String madonvi, String nhansu_id) {
+    public Response setDaotaoboiduong(JSONObject daotaoboiduong, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             daotaoboiduong.put("NhanSu_Id", nhansu_id);
@@ -128,7 +128,7 @@ public class SyncMsg {
     }
 
     //danh sách tin học
-    public static Response setTinhocs(JSONArray tinhocs, String madonvi, String nhansu_id) {
+    public Response setTinhocs(JSONArray tinhocs, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < tinhocs.length(); i++) {
@@ -145,7 +145,7 @@ public class SyncMsg {
     }
 
     //danh sách ngoại ngữ
-    public static Response setNgoaingus(JSONArray ngoaingus, String madonvi, String nhansu_id) {
+    public Response setNgoaingus(JSONArray ngoaingus, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < ngoaingus.length(); i++) {
@@ -162,7 +162,7 @@ public class SyncMsg {
     }
 
     //quá trình đào tạo bồi dưỡng
-    public static Response setQuatrinhdaotaoboiduongs(JSONArray quatrinhdaotaobuoiduongs, String madonvi, String nhansu_id) {
+    public Response setQuatrinhdaotaoboiduongs(JSONArray quatrinhdaotaobuoiduongs, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < quatrinhdaotaobuoiduongs.length(); i++) {
@@ -179,7 +179,7 @@ public class SyncMsg {
     }
 
     //thông tin khác
-    public static Response setThongtinkhac(JSONObject thongtinkhac, String madonvi, String nhansu_id) {
+    public Response setThongtinkhac(JSONObject thongtinkhac, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             thongtinkhac.put("NhanSu_Id", nhansu_id);
@@ -191,7 +191,7 @@ public class SyncMsg {
     }
 
     //kết quả đanh giá phân loại
-    public static Response setKetquadanhgiaphanloais(JSONArray ketquadanhgiaphanloais, String madonvi, String nhansu_id) {
+    public Response setKetquadanhgiaphanloais(JSONArray ketquadanhgiaphanloais, String madonvi, String nhansu_id) {
         Response response = null;
         try {
             for (int i = 0; i < ketquadanhgiaphanloais.length(); i++) {
@@ -208,7 +208,7 @@ public class SyncMsg {
     }
 
     //xóa hồ sơ nhân sự và các dữ liệu liên quan
-    public static ResponseEntity delHosonhansu(Response response, String madonvi, String sohieucbccvc_bndp) {
+    public ResponseEntity delHosonhansu(Response response, String madonvi, String sohieucbccvc_bndp) {
         try {
             getstoreProcedure(_xoahosonhansu, madonvi, sohieucbccvc_bndp);
             return ResponseEntity.ok(new Response(response.getMessage(), response.getErr_code()));
@@ -218,9 +218,9 @@ public class SyncMsg {
     }
 
     // xử lý json trả về
-    public static Response getstoreProcedure(String storename, String madonvi, String json) {
+    public Response getstoreProcedure(String storename, String madonvi, String json) {
         try {
-            JSONObject retjson = new JSONObject(SyncMsgService.callStoreProcedure(storename, madonvi, json));
+            JSONObject retjson = new JSONObject(syncMsgService.callStoreProcedure(storename, madonvi, json));
             String mess = retjson.getString("MSG_TEXT");
             int err = retjson.getInt("MSG_CODE");
             String value = retjson.getString("VAL");

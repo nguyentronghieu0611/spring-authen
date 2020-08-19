@@ -10,11 +10,12 @@ import javax.persistence.StoredProcedureQuery;
 
 @Service
 public class SyncMsgService {
+
     @PersistenceContext
-    public static EntityManager entityManager = null;
+    private EntityManager entityManager;
 
     // gọi thủ tục trong sql
-    public static String callStoreProcedure(String storeProcedureName, String i_madonvi, String i_json) {
+    public String callStoreProcedure(String storeProcedureName, String i_madonvi, String i_json) {
         try {
             StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery(storeProcedureName);
             storedProcedure.registerStoredProcedureParameter("i_madonvi", String.class, ParameterMode.IN);
