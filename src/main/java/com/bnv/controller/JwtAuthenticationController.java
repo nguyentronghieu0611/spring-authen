@@ -30,7 +30,7 @@ import com.bnv.config.JwtTokenUtil;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/ApiAuth/oauth")
+@RequestMapping("/apiauth/oauth")
 public class JwtAuthenticationController {
 
     @Autowired

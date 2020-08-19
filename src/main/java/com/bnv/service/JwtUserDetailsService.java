@@ -17,7 +17,7 @@ import com.bnv.model.UserDTO;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
-	
+
 	@Autowired
 	private UserDao userDao;
 
@@ -33,7 +33,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 		return new org.springframework.security.core.userdetails.User(user.getUser_name(), user.getUser_pwd_encoded(),
 				new ArrayList<>());
 	}
-	
+
 	public DAOUser save(UserDTO user) {
 		DAOUser newUser = new DAOUser();
 		newUser.setUser_name(user.getUsername());
