@@ -15,6 +15,6 @@ public interface HelloRepository extends JpaRepository<DAOUser, Long> {
     String findCarsAfterYear(@Param("input") String input);
 
     @Query(value = "SELECT * FROM TEMP_ADM_USER",nativeQuery = true)
-    List<DAOUser> getAll();
+    List<Object> getAll();
 
 }
