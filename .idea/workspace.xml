@@ -2,15 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5dfdda98-fcde-4763-88bf-57982758bead" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bnv/controller/MsgController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bnv/controller/MsgController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bnv/service/EntityMsgService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bnv/service/EntityMsgService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bnv/service/SyncMsgService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bnv/service/SyncMsgService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/META-INF/MANIFEST.MF" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/META-INF/maven/com.javainuse/spring-boot-jwt/pom.properties" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/META-INF/maven/com.javainuse/spring-boot-jwt/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -30,8 +24,8 @@
             <file pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/src/main/java/com/bnv/service/SyncMsgService.java">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="340">
-                    <caret line="175" column="35" selection-start-line="175" selection-start-column="35" selection-end-line="175" selection-end-column="35" />
+                  <state relative-caret-position="493">
+                    <caret line="193" column="45" lean-forward="true" selection-start-line="193" selection-start-column="45" selection-end-line="193" selection-end-column="45" />
                     <folding>
                       <element signature="imports" expanded="true" />
                     </folding>
@@ -142,7 +136,7 @@
       <select />
     </treeState>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-1811" />
     <option name="y" value="-8" />
     <option name="width" value="1400" />
@@ -317,15 +311,15 @@
       <workItem from="1597718647072" duration="19952000" />
       <workItem from="1597770089857" duration="1850000" />
       <workItem from="1597852313254" duration="7681000" />
-      <workItem from="1597890042127" duration="19762000" />
+      <workItem from="1597890042127" duration="19828000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="50470000" />
+    <option name="totallyTimeSpent" value="50536000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1928" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-1928" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18763326" />
@@ -650,8 +644,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/bnv/service/SyncMsgService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="175" column="35" selection-start-line="175" selection-start-column="35" selection-end-line="175" selection-end-column="35" />
+        <state relative-caret-position="493">
+          <caret line="193" column="45" lean-forward="true" selection-start-line="193" selection-start-column="45" selection-end-line="193" selection-end-column="45" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
