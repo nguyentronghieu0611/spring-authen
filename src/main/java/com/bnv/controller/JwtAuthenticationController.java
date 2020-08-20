@@ -28,6 +28,8 @@ import com.bnv.service.JwtUserDetailsService;
 
 import com.bnv.config.JwtTokenUtil;
 
+import javax.validation.Valid;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/ApiAuth/oauth")
@@ -44,7 +46,7 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) {
+    public ResponseEntity<?> createAuthenticationToken(@Valid @RequestBody JwtRequest authenticationRequest) {
         try {
             authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
@@ -66,7 +68,7 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> saveUser(@RequestBody UserDTO user) {
+    public ResponseEntity<?> saveUser(@Valid @RequestBody UserDTO user) {
         try {
             userDetailsService.save(user);
             return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
