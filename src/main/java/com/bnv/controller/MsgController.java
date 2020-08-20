@@ -58,6 +58,9 @@ public class MsgController {
             JSONObject hoso_cbccvc = Body.getJSONObject("HOSO_CBCCVC");
             String soHieucbccvc_bndp = hoso_cbccvc.getString("SoHieuCBCCVC_BNDP");
 
+            if (hoso_cbccvc.isNull("THONGTINCHUNG") || hoso_cbccvc.getJSONObject("THONGTINCHUNG").isEmpty())
+                return ResponseEntity.ok(new Response(String.format("Thêm mới hồ sơ nhân sự không thành công: Không tìm thấy thông tin chung!"), 1));
+
             JSONObject thongtinchung = hoso_cbccvc.getJSONObject("THONGTINCHUNG");
             //kiểm tra và tạo mã số hiệu cán bộ bộ ngành địa phương
             if (soHieucbccvc_bndp == null || soHieucbccvc_bndp.isEmpty())
@@ -80,13 +83,13 @@ public class MsgController {
             else
                 nhansu_id = response.getValue();
 
-            if (!hoso_cbccvc.isNull("TUYENDUNG_QT_CONGTAC") && !hoso_cbccvc.getString("TUYENDUNG_QT_CONGTAC").isEmpty()) {
+            if (!hoso_cbccvc.isNull("TUYENDUNG_QT_CONGTAC") && !hoso_cbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC").isEmpty()) {
                 JSONObject tuyendungquatrinhcongtac = hoso_cbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC");
                 response = syncMsg.setTuyendungquatrinhcongtac(tuyendungquatrinhcongtac, madonvi, nhansu_id);
                 if (response.getErr_code() == 1)
                     return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
 
-                if (!hoso_cbccvc.isNull("DS_QUATRINH_CONGTAC") && !hoso_cbccvc.getString("DS_QUATRINH_CONGTAC").isEmpty()) {
+                if (!tuyendungquatrinhcongtac.isNull("DS_QUATRINH_CONGTAC") && tuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC").length() > 0) {
                     JSONArray quatrinhcongtacs = tuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC");
                     response = syncMsg.setQuatrinhcongtacs(quatrinhcongtacs, madonvi, nhansu_id);
                     if (response.getErr_code() == 1)
@@ -94,20 +97,20 @@ public class MsgController {
                 }
             }
 
-            if (!hoso_cbccvc.isNull("LUONG_PHUCAP_CHUCVU") && !hoso_cbccvc.getString("LUONG_PHUCAP_CHUCVU").isEmpty()) {
+            if (!hoso_cbccvc.isNull("LUONG_PHUCAP_CHUCVU") && !hoso_cbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU").isEmpty()) {
                 JSONObject luongphucapchucvu = hoso_cbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU");
                 response = syncMsg.setLuongphucapchucvu(luongphucapchucvu, madonvi, nhansu_id);
                 if (response.getErr_code() == 1)
                     return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
 
-                if (!hoso_cbccvc.isNull("DS_QUATRINH_PHUCAP") && !hoso_cbccvc.getString("DS_QUATRINH_PHUCAP").isEmpty()) {
+                if (!luongphucapchucvu.isNull("DS_QUATRINH_PHUCAP") && luongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP").length() > 0) {
                     JSONArray quatrinhphucaps = luongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP");
                     response = syncMsg.setQuatrinhphucap(quatrinhphucaps, madonvi, nhansu_id);
                     if (response.getErr_code() == 1)
                         return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
                 }
 
-                if (!hoso_cbccvc.isNull("DS_QUATRINH_LUONG") && !hoso_cbccvc.getString("DS_QUATRINH_LUONG").isEmpty()) {
+                if (!luongphucapchucvu.isNull("DS_QUATRINH_LUONG") && luongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG").length() > 0) {
                     JSONArray quatrinhluongs = luongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG");
                     response = syncMsg.setQuatrinhluong(quatrinhluongs, madonvi, nhansu_id);
                     if (response.getErr_code() == 1)
@@ -115,25 +118,25 @@ public class MsgController {
                 }
             }
 
-            if (!hoso_cbccvc.isNull("TRINHDO_DAOTAO_BOIDUONG") && !hoso_cbccvc.getString("TRINHDO_DAOTAO_BOIDUONG").isEmpty()) {
+            if (!hoso_cbccvc.isNull("TRINHDO_DAOTAO_BOIDUONG") && !hoso_cbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG").isEmpty()) {
                 JSONObject daotaoboiduong = hoso_cbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG");
                 response = syncMsg.setDaotaoboiduong(daotaoboiduong, madonvi, nhansu_id);
                 if (response.getErr_code() == 1)
                     return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
 
-                if (!hoso_cbccvc.isNull("DS_TINHOC") && !hoso_cbccvc.getString("DS_TINHOC").isEmpty()) {
+                if (!daotaoboiduong.isNull("DS_TINHOC") && daotaoboiduong.getJSONArray("DS_TINHOC").length() > 0) {
                     JSONArray tinhocs = daotaoboiduong.getJSONArray("DS_TINHOC");
                     response = syncMsg.setTinhocs(tinhocs, madonvi, nhansu_id);
                     if (response.getErr_code() == 1)
                         return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
                 }
-                if (!hoso_cbccvc.isNull("DS_NGOAINGU") && !hoso_cbccvc.getString("DS_NGOAINGU").isEmpty()) {
+                if (!daotaoboiduong.isNull("DS_NGOAINGU") && daotaoboiduong.getJSONArray("DS_NGOAINGU").length() > 0) {
                     JSONArray ngoaingus = daotaoboiduong.getJSONArray("DS_NGOAINGU");
                     response = syncMsg.setNgoaingus(ngoaingus, madonvi, nhansu_id);
                     if (response.getErr_code() == 1)
                         return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
                 }
-                if (!hoso_cbccvc.isNull("DS_QUATRINH_DAOTAO_BOIDUONG") && !hoso_cbccvc.getString("DS_QUATRINH_DAOTAO_BOIDUONG").isEmpty()) {
+                if (!daotaoboiduong.isNull("DS_QUATRINH_DAOTAO_BOIDUONG") && daotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG").length() > 0) {
                     JSONArray quatrinhdaotaobuoiduongs = daotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG");
                     response = syncMsg.setQuatrinhdaotaoboiduongs(quatrinhdaotaobuoiduongs, madonvi, nhansu_id);
                     if (response.getErr_code() == 1)
@@ -141,14 +144,15 @@ public class MsgController {
                 }
             }
 
-            if (!hoso_cbccvc.isNull("THONGTIN_KHAC") && !hoso_cbccvc.getString("THONGTIN_KHAC").isEmpty()) {
+            if (!hoso_cbccvc.isNull("THONGTIN_KHAC") && !hoso_cbccvc.getJSONObject("THONGTIN_KHAC").isEmpty()) {
                 JSONObject thongtinkhac = hoso_cbccvc.getJSONObject("THONGTIN_KHAC");
                 response = syncMsg.setThongtinkhac(thongtinkhac, madonvi, nhansu_id);
                 if (response.getErr_code() == 1)
                     return syncMsg.delHosonhansu(response, madonvi, jsonSohieucbccvc_bndp.toString());
             }
 
-            if (!hoso_cbccvc.isNull("DS_KETQUA_DANHGIA_PHANLOAI") && !hoso_cbccvc.getString("DS_KETQUA_DANHGIA_PHANLOAI").isEmpty()) {
+
+            if (!hoso_cbccvc.isNull("DS_KETQUA_DANHGIA_PHANLOAI") && hoso_cbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI").length() > 0) {
                 JSONArray ketquadanhgiaphanloais = hoso_cbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI");
                 response = syncMsg.setKetquadanhgiaphanloais(ketquadanhgiaphanloais, madonvi, nhansu_id);
                 if (response.getErr_code() == 1)
@@ -158,7 +162,7 @@ public class MsgController {
 
             System.out.println("--------------------------------------------------------import hosonhansu");
             System.out.println("Thêm mới hồ sơ nhân sư thành công " + sohieubndp_bnv);
-            return ResponseEntity.ok(new Response("Thêm mới hồ sơ nhân sư thành công", 0));
+            return ResponseEntity.ok(new Response(  action_type.equals("ADD")? "Thêm mới hồ sơ cán bộ, công chức, viên chức thành công": "Cập nhật hồ sơ cán bộ, công chức, viên chức thành công", 0));
 
         } catch (Exception ex) {
             return ResponseEntity.ok(new Response("Thêm mới hồ sơ nhân sự không thành công: " + ex.getMessage(), 1));
@@ -176,8 +180,7 @@ public class MsgController {
         return status;
     }
 
-    //check SoHieuCBCCVC_BNDP
-    // -1: không tìm thấy thẻ liệu trong thẻ, 0: không tìm thấy tồn tại, khác -1,0 : là số id bản ghi tìm được ,:
+    //check SoHieuCBCCVC_BNDP -1: không tìm thấy thẻ liệu trong thẻ, 0: không tìm thấy tồn tại, khác -1,0 : là số id bản ghi tìm được ,:
     private int checkSoHieuCbccvcBndp(JSONObject hoso_cbccvc) {
         Response response = null;
         int status = 0;
