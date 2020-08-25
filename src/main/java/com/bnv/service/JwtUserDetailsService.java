@@ -3,6 +3,7 @@ package com.bnv.service;
 import java.util.ArrayList;
 
 import com.bnv.model.ChangepassModel;
+import com.bnv.repository.AdmUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +25,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 	@Autowired
 	private PasswordEncoder bcryptEncoder;
 
+	@Autowired
+	private AdmUserRepository admUserRepository;
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		DAOUser user = userDao.findByUsername(username);
@@ -32,6 +36,12 @@ public class JwtUserDetailsService implements UserDetailsService {
 		}
 		return new org.springframework.security.core.userdetails.User(user.getUser_name(), user.getUser_pwd_encoded(),
 				new ArrayList<>());
+	}
+
+	public String loadOrgCodeByUsername(String username){
+		String org_code;
+		org_code = admUserRepository.findORGCODE(username);
+		return org_code;
 	}
 
 	public DAOUser save(UserDTO user) {

@@ -56,4 +56,7 @@ public interface AdmUserRepository extends JpaRepository<DAOUser, Long> {
 
 	@Query(value = "SELECT pkg_parse_xml.PARSE_M0007(:i_madonvi, :i_xml) FROM DUAL", nativeQuery = true)
 	public String FunctionServiceM0007(String i_madonvi, String i_xml);
+
+	@Query(value = "SELECT ORG_CODE FROM TEMP_ADM_USER where user_name = :username", nativeQuery = true)
+	public String findORGCODE(String username);
 }
