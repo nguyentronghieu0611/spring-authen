@@ -1,17 +1,14 @@
 package com.bnv.config;
 
-import java.io.IOException;
-import java.io.Serializable;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.bnv.model.Response;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Serializable;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Serializable {
@@ -25,6 +22,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		ServletOutputStream out = response.getOutputStream();
-		out.write("{\"err_code\":1,\"message\":\"Xác thực thất bại!\"}".getBytes("UTF-8"));
+		out.write("{\"message\":\"Xác thực không thành công. Token không đúng hoặc đã hết phiên làm việc!\",\"err_code\":1}".getBytes("UTF-8"));
 	}
 }
