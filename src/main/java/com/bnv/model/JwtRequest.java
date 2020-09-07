@@ -1,15 +1,20 @@
 package com.bnv.model;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 public class JwtRequest implements Serializable {
 
 	private static final long serialVersionUID = 5926468583005150707L;
-	
+
+	@NotNull(message = "Vui lòng nhập username")
+	@NotEmpty(message = "Username không được trống")
 	private String username;
+	@NotNull(message = "Vui lòng nhập mật khẩu")
+	@NotEmpty(message = "Mật khẩu không được trống")
 	private String password;
 	
-	//need default constructor for JSON Parsing
 	public JwtRequest()
 	{
 

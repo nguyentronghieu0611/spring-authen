@@ -1,8 +1,18 @@
 package com.bnv.model;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 public class UserDTO {
+
+	@NotNull(message = "Vui lòng nhập username")
+	@NotEmpty(message = "Username không được trống")
 	private String username;
+
+	@NotNull(message = "Vui lòng nhập mật khẩu")
+	@NotEmpty(message = "Mật khẩu không được trống")
 	private String password;
+
 	private String password_encoded;
 
 	public String getUsername() {
