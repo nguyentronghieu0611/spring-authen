@@ -6,6 +6,7 @@ import com.bnv.model.SyncResponse;
 import com.bnv.repository.AdmUserRepository;
 import com.bnv.service.SyncMsgService;
 import com.bnv.service.SyncService;
+import com.bnv.util.ApplicationUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,19 +36,19 @@ public class MsgController {
     SyncMsgService syncMsg;
     @Autowired
     SyncService sync;
+    @Autowired
+    private ApplicationUtil applicationUtil;
 
     @Value("#{'${dm.org_Code}'.split(',')}")
     private List<String> dmorg_Code;
-
 
     private MsgResponse ServiceValidate(String token, Map<String, String> body) {
         String uniqueID = UUID.randomUUID().toString();
         try {
             logTransaction(body.toString(), uniqueID);
 
-            // ApplicationUtil applicationUtil = new ApplicationUtil();
-            // if (!applicationUtil.validateTokenOrg(token, body))
-            //return new MsgResponse("Mã đơn vị không thuộc về tài khoản này", 1, uniqueID);
+            if (!applicationUtil.validateTokenOrg(token, body))
+                return new MsgResponse(String.format("Tài khoản chưa được phân quyền đồng bộ dữ liệu cho đơn vị này %s !", body.get("org_Code")), 1, uniqueID);
 
             String madonvi = body.get("org_Code");
             if (!sync.validateCategory(dmorg_Code, madonvi))
@@ -108,6 +109,11 @@ public class MsgController {
     @RequestMapping(value = {"/servicem0001", "/servicem0001_1"})
     public ResponseEntity<?> ServiceM0001(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
+//            JSONObject jsonSubject = new JSONObject("{\"id\":1,\"name\":\"Lampshade\",\"price\":0}");
+//            JSONObject jsonSchema = new JSONObject("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"Product\",\"description\":\"A product from the catalog\",\"type\":\"object\",\"properties\":{\"id\":{\"description\":\"The unique identifier for a product\",\"type\":\"integer\"},\"name\":{\"description\":\"Name of the product\",\"type\":\"string\"},\"price\":{\"type\":\"number\",\"minimum\":0,\"exclusiveMinimum\":true}},\"required\":[\"id\",\"name\",\"price\"]}");
+//            Schema schema = SchemaLoader.load(jsonSchema);
+//            schema.validate(jsonSubject);
+
             JSONObject objthongtinchung, objtuyendungquatrinhcongtac, objluongphucapchucvu, objtrinhdodaotaoboiduong, objthongtinkhac;
             JSONArray arrquatrinhcongtac = null, arrquatrinhphucap = null, arrquatrinhluong = null, arrtinhoc = null, arrngoaingu = null, arrquatrinhdaotaoboiduong = null, arrketquadanhgia = null;
 

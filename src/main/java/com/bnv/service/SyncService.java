@@ -63,7 +63,7 @@ public class SyncService {
     private List<String> dmtrinhdochuyenmondaotao;
     @Value("#{'${dm.chuyennganhdaotao}'.split(',')}")
     private List<String> dmchuyennganhdaotao;
-//    @Value("#{'${dm.trinhdodaotao}'.split(',')}")
+    //    @Value("#{'${dm.trinhdodaotao}'.split(',')}")
 //    private List<String> dmtrinhdodaotao;
     @Value("#{'${dm.kettquadanhgia}'.split(',')}")
     private List<String> dmkettquadanhgia;
@@ -112,7 +112,9 @@ public class SyncService {
     public SyncResponse syncThongtinchung(EntityManager em, String madonvi, int nhansu_id, JSONObject objthongtinchung) {
         SyncResponse syncresponse;
         boolean madonvisudung = false;
-        if (!objthongtinchung.getString("MaDonviSuDung").isEmpty())
+        if (objthongtinchung.getString("MaDonviSuDung").isEmpty())
+            madonvisudung = false;
+        else {
             if (validateCategory(dmdonvicap1, objthongtinchung.getString("MaDonviSuDung")))
                 madonvisudung = true;
             else if (validateCategory(dmdonvicap2, objthongtinchung.getString("MaDonviSuDung")))
@@ -121,11 +123,14 @@ public class SyncService {
                 madonvisudung = true;
             else if (validateCategory(dmdonvicap4, objthongtinchung.getString("MaDonviSuDung")))
                 madonvisudung = true;
+        }
         if (!madonvisudung)
             return new SyncResponse("Mã đơn vị sử dụng không có hoặc không đúng với danh mục!", 1);
 
         boolean madonviquanly = false;
-        if (!objthongtinchung.getString("MaDonViQuanLy").isEmpty())
+        if (objthongtinchung.getString("MaDonViQuanLy").isEmpty())
+            madonviquanly = false;
+        else {
             if (validateCategory(dmdonvicap1, objthongtinchung.getString("MaDonViQuanLy")))
                 madonviquanly = true;
             else if (validateCategory(dmdonvicap2, objthongtinchung.getString("MaDonViQuanLy")))
@@ -134,10 +139,14 @@ public class SyncService {
                 madonviquanly = true;
             else if (validateCategory(dmdonvicap4, objthongtinchung.getString("MaDonViQuanLy")))
                 madonviquanly = true;
-
+        }
         if (!madonviquanly)
             return new SyncResponse("Mã đơn vị quản lý không có hoặc không đúng với danh mục!", 1);
 
+        if (objthongtinchung.getString("SoHieuCBCCVC").isEmpty())
+            return new SyncResponse("Số hiệu cán bộ, công chức, viên chức không có hoặc rỗng!", 1);
+        if (objthongtinchung.getString("HoVaTen").isEmpty())
+            return new SyncResponse("Họ tên cán bộ, công chức, viên chức không có hoặc rỗng!", 1);
         if (!objthongtinchung.getString("PhanLoaiHoSo").isEmpty() && !validateCategory(dmdoituong, objthongtinchung.getString("PhanLoaiHoSo")))
             return new SyncResponse("Mã phân loại hồ sơ (đối tượng) không đúng với danh mục!", 1);
         if (!objthongtinchung.getString("GioiTinh").isEmpty() && !validateCategory(dmgioitinh, objthongtinchung.getString("GioiTinh")))

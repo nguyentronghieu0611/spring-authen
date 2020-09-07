@@ -14,12 +14,11 @@ import java.util.Scanner;
 public class ApplicationUtil {
     @Autowired
     JwtUserDetailsService jwtUserDetailsService;
-
     @Autowired
     JwtTokenUtil jwtTokenUtil;
 
 
-    public String extractPostRequestBody(HttpServletRequest request){
+    public String extractPostRequestBody(HttpServletRequest request) {
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             Scanner s = null;
             try {
@@ -32,10 +31,15 @@ public class ApplicationUtil {
         return "";
     }
 
-    public boolean validateTokenOrg(String token, Map<String, String> body){
-        if(!jwtUserDetailsService.loadOrgCodeByUsername(jwtTokenUtil.getUsernameFromToken(token.substring(7))).equals(body.get("org_Code")))
+    public boolean validateTokenOrg(String token, Map<String, String> body) {
+        try {
+            String org_code = jwtUserDetailsService.loadOrgCodeByUsername(jwtTokenUtil.getUsernameFromToken(token.substring(7)));
+            if (org_code != null && org_code.equals(body.get("org_Code")))
+                return true;
+            else
+                return false;
+        } catch (Exception ex) {
             return false;
-        else
-            return true;
+        }
     }
 }
