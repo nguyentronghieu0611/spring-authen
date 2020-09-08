@@ -12,7 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,19 +38,21 @@ public class MsgController {
     @Autowired
     private ApplicationUtil applicationUtil;
 
-    @Value("#{'${dm.org_Code}'.split(',')}")
-    private List<String> dmorg_Code;
+    private JSONObject jsonEmtry = new JSONObject("{}");
+
+    private JSONArray jsonArrEmtry = new JSONArray("[]");
 
     private MsgResponse ServiceValidate(String token, Map<String, String> body) {
         String uniqueID = UUID.randomUUID().toString();
         try {
+
             logTransaction(body.toString(), uniqueID);
 
             if (!applicationUtil.validateTokenOrg(token, body))
                 return new MsgResponse(String.format("Tài khoản chưa được phân quyền đồng bộ dữ liệu cho đơn vị này %s !", body.get("org_Code")), 1, uniqueID);
 
             String madonvi = body.get("org_Code");
-            if (!sync.validateCategory(dmorg_Code, madonvi))
+            if (!sync.validateCategory(sync.dmorg_Code, madonvi))
                 return new MsgResponse(String.format("Mã đơn vị %s không tồn tại trên hệ thống!", madonvi), 1, uniqueID);
 
             String strJson = body.get("jsonContent");
@@ -87,7 +88,7 @@ public class MsgController {
 
             if (action_type.equals("ADD"))
                 if (hoso_cbccvc.isNull("THONGTINCHUNG") || hoso_cbccvc.getJSONObject("THONGTINCHUNG").isEmpty())
-                    return new MsgResponse("Không tìm thấy thông tin trong khi thực hiện thêm mới dữ liệu cán bộ, công chức, viên chứ!", 1, uniqueID);
+                    return new MsgResponse("Không tìm thấy thông tin chung trong khi thực hiện thêm mới dữ liệu cán bộ, công chức, viên chứ!", 1, uniqueID);
 
             JSONObject val = new JSONObject();
             val.put("Transaction_ID", uniqueID);
@@ -109,12 +110,7 @@ public class MsgController {
     @RequestMapping(value = {"/servicem0001", "/servicem0001_1"})
     public ResponseEntity<?> ServiceM0001(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-//            JSONObject jsonSubject = new JSONObject("{\"id\":1,\"name\":\"Lampshade\",\"price\":0}");
-//            JSONObject jsonSchema = new JSONObject("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"Product\",\"description\":\"A product from the catalog\",\"type\":\"object\",\"properties\":{\"id\":{\"description\":\"The unique identifier for a product\",\"type\":\"integer\"},\"name\":{\"description\":\"Name of the product\",\"type\":\"string\"},\"price\":{\"type\":\"number\",\"minimum\":0,\"exclusiveMinimum\":true}},\"required\":[\"id\",\"name\",\"price\"]}");
-//            Schema schema = SchemaLoader.load(jsonSchema);
-//            schema.validate(jsonSubject);
-
-            JSONObject objthongtinchung, objtuyendungquatrinhcongtac, objluongphucapchucvu, objtrinhdodaotaoboiduong, objthongtinkhac;
+            JSONObject objthongtinchung = null, objtuyendungquatrinhcongtac = null, objluongphucapchucvu = null, objtrinhdodaotaoboiduong = null, objthongtinkhac = null;
             JSONArray arrquatrinhcongtac = null, arrquatrinhphucap = null, arrquatrinhluong = null, arrtinhoc = null, arrngoaingu = null, arrquatrinhdaotaoboiduong = null, arrketquadanhgia = null;
 
             MsgResponse msgresponse = ServiceValidate(token, body);
@@ -133,57 +129,61 @@ public class MsgController {
             objheader.put("Transaction_ID", transaction_id);
 
             //thông tin chung
-            objthongtinchung = objhosocbccvc.getJSONObject("THONGTINCHUNG");
-            objthongtinchung.put("NhanSu_Id", hosonhansu_id);
-            objthongtinchung.put("SoHieuCBCCVC_BNDP", sohieubndp_bnv);
+            if (!objhosocbccvc.isNull("THONGTINCHUNG"))
+                if (!objhosocbccvc.getJSONObject("THONGTINCHUNG").isEmpty()) {
+                    objthongtinchung = objhosocbccvc.getJSONObject("THONGTINCHUNG");
+                    objthongtinchung.put("NhanSu_Id", hosonhansu_id);
+                    objthongtinchung.put("SoHieuCBCCVC_BNDP", sohieubndp_bnv);
+                } else objthongtinchung = jsonEmtry;
 
             //tuyển dụng quá trình công tác
-            if (!objhosocbccvc.isNull("TUYENDUNG_QT_CONGTAC") && !objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC").isEmpty()) {
-                objtuyendungquatrinhcongtac = objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC");
-                if (!objtuyendungquatrinhcongtac.isNull("DS_QUATRINH_CONGTAC") && objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC").length() > 0)
-                    arrquatrinhcongtac = objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC");
-                else
-                    arrquatrinhcongtac = null;
-            } else objtuyendungquatrinhcongtac = null;
+            if (!objhosocbccvc.isNull("TUYENDUNG_QT_CONGTAC")) {
+                if (!objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC").isEmpty()) {
+                    objtuyendungquatrinhcongtac = objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC");
+                    if (!objtuyendungquatrinhcongtac.isNull("DS_QUATRINH_CONGTAC"))
+                        arrquatrinhcongtac = objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC").length() > 0 ? objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC") : jsonArrEmtry;
+                } else objtuyendungquatrinhcongtac = jsonEmtry;
+            }
 
             //lương phụ cấp chức vụ
-            if (!objhosocbccvc.isNull("LUONG_PHUCAP_CHUCVU") && !objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU").isEmpty()) {
-                objluongphucapchucvu = objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU");
-                if (!objluongphucapchucvu.isNull("DS_QUATRINH_PHUCAP") && objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP").length() > 0)
-                    arrquatrinhphucap = objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP");
-                else arrquatrinhphucap = null;
-                if (!objluongphucapchucvu.isNull("DS_QUATRINH_LUONG") && objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG").length() > 0)
-                    arrquatrinhluong = objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG");
-                else arrquatrinhluong = null;
-            } else objluongphucapchucvu = null;
+            if (!objhosocbccvc.isNull("LUONG_PHUCAP_CHUCVU")) {
+                if (!objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU").isEmpty()) {
+                    objluongphucapchucvu = objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU");
+                    if (!objluongphucapchucvu.isNull("DS_QUATRINH_PHUCAP"))
+                        arrquatrinhphucap = objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP").length() > 0 ? objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP") : jsonArrEmtry;
+                    if (!objluongphucapchucvu.isNull("DS_QUATRINH_LUONG"))
+                        arrquatrinhluong = objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG").length() > 0 ? objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG") : jsonArrEmtry;
+                } else objluongphucapchucvu = jsonEmtry;
+            }
 
             //trinh độ đào tạo bồi dưỡng
-            if (!objhosocbccvc.isNull("TRINHDO_DAOTAO_BOIDUONG") && !objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG").isEmpty()) {
-                objtrinhdodaotaoboiduong = objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG");
-                if (!objtrinhdodaotaoboiduong.isNull("DS_TINHOC") && objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC").length() > 0)
-                    arrtinhoc = objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC");
-                else arrtinhoc = null;
-                if (!objtrinhdodaotaoboiduong.isNull("DS_NGOAINGU") && objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU").length() > 0)
-                    arrngoaingu = objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU");
-                else arrngoaingu = null;
-                if (!objtrinhdodaotaoboiduong.isNull("DS_QUATRINH_DAOTAO_BOIDUONG") && objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG").length() > 0)
-                    arrquatrinhdaotaoboiduong = objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG");
-                else arrquatrinhdaotaoboiduong = null;
-            } else objtrinhdodaotaoboiduong = null;
+            if (!objhosocbccvc.isNull("TRINHDO_DAOTAO_BOIDUONG")) {
+                if (!objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG").isEmpty()) {
+                    objtrinhdodaotaoboiduong = objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG");
+                    if (!objtrinhdodaotaoboiduong.isNull("DS_TINHOC"))
+                        arrtinhoc = objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC").length() > 0 ? objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC") : jsonArrEmtry;
+
+                    if (!objtrinhdodaotaoboiduong.isNull("DS_NGOAINGU"))
+                        arrngoaingu = objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU").length() > 0 ? objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU") : jsonArrEmtry;
+
+                    if (!objtrinhdodaotaoboiduong.isNull("DS_QUATRINH_DAOTAO_BOIDUONG"))
+                        arrquatrinhdaotaoboiduong = objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG").length() > 0 ? objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG") : jsonArrEmtry;
+                } else objtrinhdodaotaoboiduong = jsonEmtry;
+            }
 
             //thông tin khác
-            if (!objhosocbccvc.isNull("THONGTIN_KHAC") && !objhosocbccvc.getJSONObject("THONGTIN_KHAC").isEmpty())
-                objthongtinkhac = objhosocbccvc.getJSONObject("THONGTIN_KHAC");
-            else objthongtinkhac = null;
+            if (!objhosocbccvc.isNull("THONGTIN_KHAC"))
+                objthongtinkhac = !objhosocbccvc.getJSONObject("THONGTIN_KHAC").isEmpty() ? objhosocbccvc.getJSONObject("THONGTIN_KHAC") : jsonEmtry;
 
             //kết quả đánh giá xếp loại
-            if (!objhosocbccvc.isNull("DS_KETQUA_DANHGIA_PHANLOAI") && objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI").length() > 0)
-                arrketquadanhgia = objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI");
-            else arrketquadanhgia = null;
+            if (!objhosocbccvc.isNull("DS_KETQUA_DANHGIA_PHANLOAI"))
+                arrketquadanhgia = objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI").length() > 0 ? objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI") : jsonArrEmtry;
 
-            //call stor cập nhật dữ liệu
-            SyncResponse syncResponse = syncMsg.callStoreProcedureServicem0001(action_type, hosonhansu_id, objheader, objthongtinchung, objtuyendungquatrinhcongtac, objluongphucapchucvu, objtrinhdodaotaoboiduong, objthongtinkhac,
-                    arrquatrinhcongtac, arrquatrinhphucap, arrquatrinhluong, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong, arrketquadanhgia);
+            SyncResponse syncResponse = new SyncResponse(null, 1, null);
+            if (action_type.equals("ADD") || action_type.equals("EDIT"))
+                syncResponse = syncMsg.updateServiceM0001(action_type, hosonhansu_id, objheader, objthongtinchung, objtuyendungquatrinhcongtac, objluongphucapchucvu, objtrinhdodaotaoboiduong, objthongtinkhac, arrquatrinhcongtac, arrquatrinhphucap, arrquatrinhluong, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong, arrketquadanhgia);
+            else if (action_type.equals("DEL"))
+                syncResponse = syncMsg.deleteServiceM0001(hosonhansu_id, objheader);
 
             System.out.println("---------------------import hosonhansu");
             System.out.println("Thêm mới dữ liệu CBCCVC thành công " + sohieubndp_bnv);
@@ -201,7 +201,7 @@ public class MsgController {
     @RequestMapping("/servicem0002")
     public ResponseEntity<?> ServiceM0002(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-            JSONObject objtuyendungquatrinhcongtac;
+            JSONObject objtuyendungquatrinhcongtac = null;
             JSONArray arrquatrinhcongtac = null;
 
             MsgResponse msgresponse = ServiceValidate(token, body);
@@ -220,16 +220,23 @@ public class MsgController {
             objheader.put("Transaction_ID", transaction_id);
 
             //tuyển dụng quá trình công tác
-            if (!objhosocbccvc.isNull("TUYENDUNG_QT_CONGTAC") && !objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC").isEmpty()) {
-                objtuyendungquatrinhcongtac = objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC");
-                if (!objtuyendungquatrinhcongtac.isNull("DS_QUATRINH_CONGTAC") && objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC").length() > 0)
-                    arrquatrinhcongtac = objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC");
+            if (!objhosocbccvc.isNull("TUYENDUNG_QT_CONGTAC")) {
+                if (!objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC").isEmpty()) {
+                    objtuyendungquatrinhcongtac = objhosocbccvc.getJSONObject("TUYENDUNG_QT_CONGTAC");
+                    if (!objtuyendungquatrinhcongtac.isNull("DS_QUATRINH_CONGTAC"))
+                        arrquatrinhcongtac = objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC").length() > 0 ? objtuyendungquatrinhcongtac.getJSONArray("DS_QUATRINH_CONGTAC") : jsonArrEmtry;
+                } else objtuyendungquatrinhcongtac = jsonEmtry;
+            }
+            SyncResponse syncResponse = new SyncResponse(null, 1, null);
+            if (action_type.equals("EDIT"))
+                syncResponse = syncMsg.updateServicem0002(action_type, hosonhansu_id, objheader, objtuyendungquatrinhcongtac, arrquatrinhcongtac);
+            else if (action_type.equals("DEL"))
+                if (objtuyendungquatrinhcongtac != null && !objtuyendungquatrinhcongtac.isEmpty())
+                    syncResponse = syncMsg.deleteServiceM0002(hosonhansu_id, objheader, arrquatrinhcongtac);
                 else
-                    arrquatrinhcongtac = null;
-            } else objtuyendungquatrinhcongtac = null;
-
-            //call stor cập nhật dữ liệu
-            SyncResponse syncResponse = syncMsg.callStoreProcedureServicem0002(action_type, hosonhansu_id, objheader, objtuyendungquatrinhcongtac, arrquatrinhcongtac);
+                    return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0002 không đúng định dạng quy định!", 1));
+            else
+                return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0002 không đúng định dạng quy định, Hành động phải thuộc EDIT hoặc DEL!", 1));
 
             System.out.println("---------------------import hosonhansu");
             System.out.println("Cập nhật thông tin về tuyển dụng quá trình công tác" + sohieubndp_bnv);
@@ -247,7 +254,7 @@ public class MsgController {
     @RequestMapping("/servicem0003")
     public ResponseEntity<?> ServiceM0003(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-            JSONObject objluongphucapchucvu;
+            JSONObject objluongphucapchucvu = null;
             JSONArray arrquatrinhphucap = null, arrquatrinhluong = null;
 
             MsgResponse msgresponse = ServiceValidate(token, body);
@@ -266,18 +273,26 @@ public class MsgController {
             objheader.put("Transaction_ID", transaction_id);
 
             //lương phụ cấp chức vụ
-            if (!objhosocbccvc.isNull("LUONG_PHUCAP_CHUCVU") && !objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU").isEmpty()) {
-                objluongphucapchucvu = objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU");
-                if (!objluongphucapchucvu.isNull("DS_QUATRINH_PHUCAP") && objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP").length() > 0)
-                    arrquatrinhphucap = objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP");
-                else arrquatrinhphucap = null;
-                if (!objluongphucapchucvu.isNull("DS_QUATRINH_LUONG") && objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG").length() > 0)
-                    arrquatrinhluong = objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG");
-                else arrquatrinhluong = null;
-            } else objluongphucapchucvu = null;
+            if (!objhosocbccvc.isNull("LUONG_PHUCAP_CHUCVU")) {
+                if (!objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU").isEmpty()) {
+                    objluongphucapchucvu = objhosocbccvc.getJSONObject("LUONG_PHUCAP_CHUCVU");
+                    if (!objluongphucapchucvu.isNull("DS_QUATRINH_PHUCAP"))
+                        arrquatrinhphucap = objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP").length() > 0 ? objluongphucapchucvu.getJSONArray("DS_QUATRINH_PHUCAP") : jsonArrEmtry;
+                    if (!objluongphucapchucvu.isNull("DS_QUATRINH_LUONG"))
+                        arrquatrinhluong = objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG").length() > 0 ? objluongphucapchucvu.getJSONArray("DS_QUATRINH_LUONG") : jsonArrEmtry;
+                } else objluongphucapchucvu = jsonEmtry;
+            }
 
-            //call stor cập nhật dữ liệu
-            SyncResponse syncResponse = syncMsg.callStoreProcedureServicem0003(action_type, hosonhansu_id, objheader, objluongphucapchucvu, arrquatrinhphucap, arrquatrinhluong);
+            SyncResponse syncResponse = new SyncResponse(null, 1, null);
+            if (action_type.equals("EDIT"))
+                syncResponse = syncMsg.updateServicem0003(action_type, hosonhansu_id, objheader, objluongphucapchucvu, arrquatrinhphucap, arrquatrinhluong);
+            else if (action_type.equals("DEL"))
+                if (objluongphucapchucvu != null && !objluongphucapchucvu.isEmpty())
+                    syncResponse = syncMsg.deleteServiceM0003(hosonhansu_id, objheader, arrquatrinhphucap, arrquatrinhluong);
+                else
+                    return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0003 không đúng định dạng quy định!", 1));
+            else
+                return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0003 không đúng định dạng quy định, Hành động phải thuộc EDIT hoặc DEL!", 1));
 
             System.out.println("---------------------import hosonhansu");
             System.out.println("Cập nhật thông tin về lương, phụ cấp, chức vụ" + sohieubndp_bnv);
@@ -295,7 +310,7 @@ public class MsgController {
     @RequestMapping("/servicem0004")
     public ResponseEntity<?> ServiceM0004(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-            JSONObject objtrinhdodaotaoboiduong;
+            JSONObject objtrinhdodaotaoboiduong = null;
             JSONArray arrtinhoc = null, arrngoaingu = null, arrquatrinhdaotaoboiduong = null;
 
             MsgResponse msgresponse = ServiceValidate(token, body);
@@ -314,21 +329,31 @@ public class MsgController {
             objheader.put("Transaction_ID", transaction_id);
 
             //trinh độ đào tạo bồi dưỡng
-            if (!objhosocbccvc.isNull("TRINHDO_DAOTAO_BOIDUONG") && !objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG").isEmpty()) {
-                objtrinhdodaotaoboiduong = objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG");
-                if (!objtrinhdodaotaoboiduong.isNull("DS_TINHOC") && objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC").length() > 0)
-                    arrtinhoc = objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC");
-                else arrtinhoc = null;
-                if (!objtrinhdodaotaoboiduong.isNull("DS_NGOAINGU") && objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU").length() > 0)
-                    arrngoaingu = objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU");
-                else arrngoaingu = null;
-                if (!objtrinhdodaotaoboiduong.isNull("DS_QUATRINH_DAOTAO_BOIDUONG") && objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG").length() > 0)
-                    arrquatrinhdaotaoboiduong = objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG");
-                else arrquatrinhdaotaoboiduong = null;
-            } else objtrinhdodaotaoboiduong = null;
+            if (!objhosocbccvc.isNull("TRINHDO_DAOTAO_BOIDUONG")) {
+                if (!objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG").isEmpty()) {
+                    objtrinhdodaotaoboiduong = objhosocbccvc.getJSONObject("TRINHDO_DAOTAO_BOIDUONG");
+                    if (!objtrinhdodaotaoboiduong.isNull("DS_TINHOC"))
+                        arrtinhoc = objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC").length() > 0 ? objtrinhdodaotaoboiduong.getJSONArray("DS_TINHOC") : jsonArrEmtry;
 
-            //call stor cập nhật dữ liệu
-            SyncResponse syncResponse = syncMsg.callStoreProcedureServicem0004(action_type, hosonhansu_id, objheader, objtrinhdodaotaoboiduong, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong);
+                    if (!objtrinhdodaotaoboiduong.isNull("DS_NGOAINGU"))
+                        arrngoaingu = objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU").length() > 0 ? objtrinhdodaotaoboiduong.getJSONArray("DS_NGOAINGU") : jsonArrEmtry;
+
+                    if (!objtrinhdodaotaoboiduong.isNull("DS_QUATRINH_DAOTAO_BOIDUONG"))
+                        arrquatrinhdaotaoboiduong = objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG").length() > 0 ? objtrinhdodaotaoboiduong.getJSONArray("DS_QUATRINH_DAOTAO_BOIDUONG") : jsonArrEmtry;
+                } else objtrinhdodaotaoboiduong = jsonEmtry;
+            }
+
+            SyncResponse syncResponse = new SyncResponse(null, 1, null);
+            if (action_type.equals("EDIT"))
+                syncResponse = syncMsg.updateServicem0004(action_type, hosonhansu_id, objheader, objtrinhdodaotaoboiduong, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong);
+            else if (action_type.equals("DEL"))
+                if (objtrinhdodaotaoboiduong != null && !objtrinhdodaotaoboiduong.isEmpty())
+                    syncResponse = syncMsg.deleteServiceM0004(hosonhansu_id, objheader, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong);
+                else
+                    return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0004 không đúng định dạng quy định!", 1));
+            else
+                return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0004 không đúng định dạng quy định, Hành động phải thuộc EDIT hoặc DEL!", 1));
+
 
             System.out.println("---------------------import hosonhansu");
             System.out.println("Cập nhật thông tin trình độ, đào tạo, bồi dưỡng " + sohieubndp_bnv);
@@ -346,7 +371,7 @@ public class MsgController {
     @RequestMapping("/servicem0005")
     public ResponseEntity<?> ServiceM0005(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-            JSONObject objthongtinkhac;
+            JSONObject objthongtinkhac = null;
             MsgResponse msgresponse = ServiceValidate(token, body);
             if (msgresponse.getErr_code() == 1)
                 return ResponseEntity.ok(msgresponse);
@@ -363,12 +388,17 @@ public class MsgController {
             objheader.put("Transaction_ID", transaction_id);
 
             //thông tin khác
-            if (!objhosocbccvc.isNull("THONGTIN_KHAC") && !objhosocbccvc.getJSONObject("THONGTIN_KHAC").isEmpty())
-                objthongtinkhac = objhosocbccvc.getJSONObject("THONGTIN_KHAC");
-            else objthongtinkhac = null;
+            if (!objhosocbccvc.isNull("THONGTIN_KHAC"))
+                objthongtinkhac = !objhosocbccvc.getJSONObject("THONGTIN_KHAC").isEmpty() ? objhosocbccvc.getJSONObject("THONGTIN_KHAC") : jsonEmtry;
 
-            //call stor cập nhật dữ liệu
-            SyncResponse syncResponse = syncMsg.callStoreProcedureServicem0005(action_type, hosonhansu_id, objheader, objthongtinkhac);
+            SyncResponse syncResponse = new SyncResponse(null, 1, null);
+            if (action_type.equals("EDIT"))
+                syncResponse = syncMsg.updateServicem0005(action_type, hosonhansu_id, objheader, objthongtinkhac);
+            else if (action_type.equals("DEL"))
+                syncResponse = syncMsg.deleteServiceM0005(hosonhansu_id, objheader);
+            else
+                return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0005 không đúng định dạng quy định, Hành động phải thuộc EDIT hoặc DEL!", 1));
+
 
             System.out.println("---------------------import hosonhansu");
             System.out.println("Cập nhật thông tin khác " + sohieubndp_bnv);
@@ -386,7 +416,7 @@ public class MsgController {
     @RequestMapping("/servicem0006")
     public ResponseEntity<?> ServiceM0006(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-            JSONArray arrketquadanhgia;
+            JSONArray arrketquadanhgia = null;
             MsgResponse msgresponse = ServiceValidate(token, body);
             if (msgresponse.getErr_code() == 1)
                 return ResponseEntity.ok(msgresponse);
@@ -403,12 +433,20 @@ public class MsgController {
             objheader.put("Transaction_ID", transaction_id);
 
             //kết quả đánh giá xếp loại
-            if (!objhosocbccvc.isNull("DS_KETQUA_DANHGIA_PHANLOAI") && objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI").length() > 0)
-                arrketquadanhgia = objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI");
-            else arrketquadanhgia = null;
+            if (!objhosocbccvc.isNull("DS_KETQUA_DANHGIA_PHANLOAI"))
+                arrketquadanhgia = objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI").length() > 0 ? objhosocbccvc.getJSONArray("DS_KETQUA_DANHGIA_PHANLOAI") : jsonArrEmtry;
 
-            //call stor cập nhật dữ liệu
-            SyncResponse syncResponse = syncMsg.callStoreProcedureServicem0006(action_type, hosonhansu_id, objheader, arrketquadanhgia);
+            SyncResponse syncResponse = new SyncResponse(null, 1, null);
+            if (action_type.equals("EDIT"))
+                syncResponse = syncMsg.updateServicem0006(action_type, hosonhansu_id, objheader, arrketquadanhgia);
+            else if (action_type.equals("DEL"))
+                if (arrketquadanhgia != null && !arrketquadanhgia.isEmpty())
+                    syncResponse = syncMsg.deleteServiceM0006(hosonhansu_id, objheader, arrketquadanhgia);
+                else
+                    return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0006 không đúng định dạng quy định!", 1));
+            else
+                return ResponseEntity.ok(new Response("Cấu trúc gói tin json M0006 không đúng định dạng quy định, Hành động phải thuộc EDIT hoặc DEL!", 1));
+
 
             System.out.println("---------------------import hosonhansu");
             System.out.println("Cập nhật kết quả đánh giá, xếp loại " + sohieubndp_bnv);

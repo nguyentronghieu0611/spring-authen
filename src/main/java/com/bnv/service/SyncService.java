@@ -4,6 +4,8 @@ import com.bnv.model.SyncResponse;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.GenericValidator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ import java.util.List;
 @Service
 public class SyncService {
     @Value("#{'${dm.org_Code}'.split(',')}")
-    private List<String> dmorg_Code;
+    public List<String> dmorg_Code;
     @Value("#{'${dm.doituong}'.split(',')}")
     private List<String> dmdoituong;
     @Value("#{'${dm.gioitinh}'.split(',')}")
@@ -63,8 +65,8 @@ public class SyncService {
     private List<String> dmtrinhdochuyenmondaotao;
     @Value("#{'${dm.chuyennganhdaotao}'.split(',')}")
     private List<String> dmchuyennganhdaotao;
-    //    @Value("#{'${dm.trinhdodaotao}'.split(',')}")
-//    private List<String> dmtrinhdodaotao;
+    //@Value("#{'${dm.trinhdodaotao}'.split(',')}")
+    //private List<String> dmtrinhdodaotao;
     @Value("#{'${dm.kettquadanhgia}'.split(',')}")
     private List<String> dmkettquadanhgia;
     @Value("#{'${dm.xeplaoitotnghiep}'.split(',')}")
@@ -142,9 +144,8 @@ public class SyncService {
         }
         if (!madonviquanly)
             return new SyncResponse("Mã đơn vị quản lý không có hoặc không đúng với danh mục!", 1);
-
-        if (objthongtinchung.getString("SoHieuCBCCVC").isEmpty())
-            return new SyncResponse("Số hiệu cán bộ, công chức, viên chức không có hoặc rỗng!", 1);
+        //if (objthongtinchung.getString("SoHieuCBCCVC").isEmpty())
+        //return new SyncResponse("Số hiệu cán bộ, công chức, viên chức không có hoặc rỗng!", 1);
         if (objthongtinchung.getString("HoVaTen").isEmpty())
             return new SyncResponse("Họ tên cán bộ, công chức, viên chức không có hoặc rỗng!", 1);
         if (!objthongtinchung.getString("PhanLoaiHoSo").isEmpty() && !validateCategory(dmdoituong, objthongtinchung.getString("PhanLoaiHoSo")))
@@ -167,6 +168,10 @@ public class SyncService {
             for (int i = 0; i < arrquatrinhcongtac.length(); i++) {
                 JSONObject quatrinhcongtac = arrquatrinhcongtac.getJSONObject(i);
                 quatrinhcongtac.put("NhanSu_Id", nhansu_id);
+                if (!quatrinhcongtac.getString("TuNgay").isEmpty() && !validateNumberDate(quatrinhcongtac.getString("TuNgay")))
+                    return new SyncResponse("Từ này trong quá trình công tác không đúng đinh dạng kiểu ngày tháng (yyyy; yyyymm; yyyymmdd)!", 1);
+                if (!quatrinhcongtac.getString("DenNgay").isEmpty() && !validateNumberDate(quatrinhcongtac.getString("DenNgay")))
+                    return new SyncResponse("Đến ngày trong quá trình công tác không đúng đinh dạng kiểu ngày tháng (yyyy; yyyymm; yyyymmdd)!", 1);
                 syncresponse = getstoreProcedure(em, _quatrinhcongtacs, madonvi, quatrinhcongtac.toString());
                 if (syncresponse.getErr_code() == 1)
                     return new SyncResponse(String.format("Cập nhật thông tin quá trình công tác không thành công: %s!", syncresponse.getMessage()), 1);
@@ -205,9 +210,9 @@ public class SyncService {
                 JSONObject quatrinhluong = arrquatrinhluong.getJSONObject(i);
                 quatrinhluong.put("NhanSu_Id", nhansu_id);
                 if (!quatrinhluong.getString("Ngach").isEmpty() && !validateCategory(dmmangach_chucdanh, quatrinhluong.getString("Ngach")))
-                    return new SyncResponse("Mã ngạch chức danh không đúng với danh mục!", 1);
+                    return new SyncResponse("Mã ngạch chức danh trong quá trình lương không đúng với danh mục!", 1);
                 if (!quatrinhluong.getString("BacLuong").isEmpty() && !validateCategory(dmbacluong, quatrinhluong.getString("BacLuong")))
-                    return new SyncResponse("Mã bậc lương không đúng với danh mục!", 1);
+                    return new SyncResponse("Mã bậc lương trong quá trình lương không đúng với danh mục!", 1);
                 syncresponse = getstoreProcedure(em, _luongs, madonvi, quatrinhluong.toString());
                 if (syncresponse.getErr_code() == 1)
                     return new SyncResponse(String.format("Cập nhật thông tin quá trình phụ cấp không thành công: %s!", syncresponse.getMessage()), 1);
@@ -360,6 +365,24 @@ public class SyncService {
         if (stringList.size() > 0)
             return true;
         else return false;
+    }
+
+    //kiểm tra danh mục
+    public boolean validateNumberDate(String strDate) {
+        boolean st = false;
+        try {
+            int len = strDate.length();
+            if ((len == 4 || len == 6 || len == 8) || StringUtils.isNumeric(strDate))
+                if (len == 4)
+                    st = GenericValidator.isDate(strDate, "yyyy", true);
+                else if (len == 6)
+                    st = GenericValidator.isDate(strDate, "yyyyMM", true);
+                else
+                    st = GenericValidator.isDate(strDate, "yyyyMMdd", true);
+        } catch (Exception ex) {
+            st = false;
+        }
+        return st;
     }
 
     // xử lý json trả về
