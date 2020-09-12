@@ -1,4 +1,4 @@
-package com.bnv.dao;
+package com.bnv.repository;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

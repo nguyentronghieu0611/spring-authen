@@ -1,19 +1,18 @@
 package com.bnv.service;
 
-import java.util.ArrayList;
-
+import com.bnv.repository.UserDao;
 import com.bnv.model.ChangepassModel;
+import com.bnv.model.DAOUser;
+import com.bnv.model.UserDTO;
+import com.bnv.repository.AdmUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.bnv.dao.UserDao;
-import com.bnv.model.DAOUser;
-import com.bnv.model.UserDTO;
+import java.util.ArrayList;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
@@ -24,6 +23,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 	@Autowired
 	private PasswordEncoder bcryptEncoder;
 
+	@Autowired
+	private AdmUserRepository admUserRepository;
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		DAOUser user = userDao.findByUsername(username);
@@ -32,6 +34,10 @@ public class JwtUserDetailsService implements UserDetailsService {
 		}
 		return new org.springframework.security.core.userdetails.User(user.getUser_name(), user.getUser_pwd_encoded(),
 				new ArrayList<>());
+	}
+
+	public String loadOrgCodeByUsername(String username){
+		return admUserRepository.findORGCODE(username);
 	}
 
 	public DAOUser save(UserDTO user) {

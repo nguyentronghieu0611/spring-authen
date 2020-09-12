@@ -1,422 +1,646 @@
 package com.bnv.service;
 
-import com.bnv.model.Response;
+import com.bnv.model.SyncResponse;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.StoredProcedureQuery;
 
 @Service
 public class SyncMsgService {
-    private static String _header = "pkg_parse_json.parse_header_json";
-    private static String _thongtinchung = "pkg_parse_json.parse_ns_thongtinchung_json";
-    private static String _tuyendungquatrinhcongtac = "pkg_parse_json.parse_ns_tuyendung_qtct_json";
-    private static String _quatrinhcongtacs = "pkg_parse_json.parse_ns_quatrinhcongtac_json";
-    private static String _luongphucap = "pkg_parse_json.parse_ns_luongphucap_json";
-    private static String _luongs = "pkg_parse_json.parse_ns_luong_json";
-    private static String _phucaps = "pkg_parse_json.parse_ns_phucap_json";
-    private static String _trinhdodaotaoboiduong = "pkg_parse_json.parse_ns_daotaoboiduong_json";
-    private static String _daotaoboiduongs = "pkg_parse_json.parse_daotaoboiduong_json";
-    private static String _tinhocs = "pkg_parse_json.parse_tinhoc_json";
-    private static String _ngoaingus = "pkg_parse_json.parse_ngoaingu_json";
-    private static String _thongtinkhac = "pkg_parse_json.parse_ns_thongtinkhac_json";
-    private static String _danhgiaphanloais = "pkg_parse_json.parse_danhgiaphanloai_json";
-
-    private static String _xoahosonhansu = "pkg_parse_json.parse_ns_xoahosonhansu_json";
-    private static String _sohieucbccvc_bndp = "PKG_SELECT_JSON.SELECT_NS_HOSONHANSU_JSON";
-
     @Autowired
     EntityMsgService syncMsgService;
-
     @Autowired
     private EntityManagerFactory entityManagerFactory;
+    @Autowired
+    private SyncService syncService;
+    private String madonvi = "";
 
-    public Response mumtilCallStoreProcedure(String madonvi, String json_header, String json_thongtinchung, String json_tuyendungquatrinhcongtac, String json_quatrinhcongtac,
-                                             String json_luongphucapchucvu, String json_quatrinhphucap, String json_quatrinhluong, String json_trinhdodaotaoboiduong,
-                                             String json_tinhoc, String json_ngoaingu, String json_quatrinhdaotaoboiduong, String json_thongtinkhac, String json_ketquadanhgia) {
-        Response response = null;
+    public SyncResponse updateServiceM0001(String actiontype, int nhansu_id, JSONObject objheader, JSONObject objthongtinchung, JSONObject objtuyendungquatrinhcongtac, JSONObject objluongphucapchucvu, JSONObject objtrinhdodaotaoboiduong, JSONObject objthongtinkhac,
+                                           JSONArray arrquatrinhcongtac, JSONArray arrquatrinhphucap, JSONArray arrquatrinhluong, JSONArray arrtinhoc, JSONArray arrngoaingu, JSONArray arrquatrinhdaotaoboiduong, JSONArray arrketquadanhgia) {
+        SyncResponse syncresponse = null;
         EntityManager em = null;
         EntityTransaction tx = null;
         try {
-
             em = entityManagerFactory.createEntityManager();
             tx = em.getTransaction();
             tx.begin();
 
-            if (!json_header.isEmpty()) {
-                StoredProcedureQuery header = syncMsgService.storeProcedures(em, _header, madonvi, json_header);
-                response = getstoreProcedure((String) header.getOutputParameterValue("u_ret"));
-                if (response.getErr_code() == 1) {
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+
+            if (actiontype.equals("EDIT")) {
+                JSONObject objdel = new JSONObject();
+                objdel.put("Nhansu_Id", nhansu_id);
+                objdel.put("HOSO_CBCCVC", 0);
+                objdel.put("DS_QUATRINH_CONGTAC", arrquatrinhcongtac != null ? 1 : 0);
+                objdel.put("DS_QUATRINH_PHUCAP", arrquatrinhphucap != null ? 1 : 0);
+                objdel.put("DS_QUATRINH_LUONG", arrquatrinhluong != null ? 1 : 0);
+                objdel.put("DS_TINHOC", arrtinhoc != null ? 1 : 0);
+                objdel.put("DS_NGOAINGU", arrngoaingu != null ? 1 : 0);
+                objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", arrquatrinhdaotaoboiduong != null ? 1 : 0);
+                objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", arrketquadanhgia != null ? 1 : 0);
+                syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+                if (syncresponse.getErr_code() == 1) {
                     tx.rollback();
-                    return response;
+                    return syncresponse;
                 }
             }
-            if (!json_thongtinchung.isEmpty()) {
-                StoredProcedureQuery thongtinchung = syncMsgService.storeProcedures(em, _thongtinchung, madonvi, json_thongtinchung);
-                response = getstoreProcedure((String) thongtinchung.getOutputParameterValue("u_ret"));
-                if (response.getErr_code() == 1) {
+            syncresponse = syncService.syncThongtinchung(em, madonvi, nhansu_id, objthongtinchung);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            nhansu_id = Integer.parseInt(syncresponse.getValue());
+
+            if (objtuyendungquatrinhcongtac != null && !objtuyendungquatrinhcongtac.isEmpty()) {
+                syncresponse = syncService.syncTuyendungquatrinhcongtac(em, madonvi, nhansu_id, objtuyendungquatrinhcongtac, arrquatrinhcongtac);
+                if (syncresponse.getErr_code() == 1) {
                     tx.rollback();
-                    return response;
+                    return syncresponse;
                 }
             }
-            if (!json_tuyendungquatrinhcongtac.isEmpty()) {
-                StoredProcedureQuery tuyendungquatrinhcongtac = syncMsgService.storeProcedures(em, _tuyendungquatrinhcongtac, madonvi, json_tuyendungquatrinhcongtac);
-                response = getstoreProcedure((String) tuyendungquatrinhcongtac.getOutputParameterValue("u_ret"));
-                if (response.getErr_code() == 1) {
+
+            if (objluongphucapchucvu != null && !objluongphucapchucvu.isEmpty()) {
+                syncresponse = syncService.syncLuongphucapchucvu(em, madonvi, nhansu_id, objluongphucapchucvu, arrquatrinhphucap, arrquatrinhluong);
+                if (syncresponse.getErr_code() == 1) {
                     tx.rollback();
-                    return response;
+                    return syncresponse;
                 }
             }
 
-            if (!json_quatrinhcongtac.isEmpty()) {
-                JSONArray quatrinhcongtacs = new JSONArray(json_quatrinhcongtac);
-                for (int i = 0; i < quatrinhcongtacs.length(); i++) {
-                    StoredProcedureQuery quatrinhcongtacQuery = syncMsgService.storeProcedures(em, _quatrinhcongtacs, madonvi, quatrinhcongtacs.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) quatrinhcongtacQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
-            if (!json_luongphucapchucvu.isEmpty()) {
-                StoredProcedureQuery luongphucapchucvu = syncMsgService.storeProcedures(em, _luongphucap, madonvi, json_luongphucapchucvu);
-                response = getstoreProcedure((String) luongphucapchucvu.getOutputParameterValue("u_ret"));
-                if (response.getErr_code() == 1) {
+            if (objtrinhdodaotaoboiduong != null && !objtrinhdodaotaoboiduong.isEmpty()) {
+                syncresponse = syncService.syncTrinhdodaotaoboiduong(em, madonvi, nhansu_id, objtrinhdodaotaoboiduong, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong);
+                if (syncresponse.getErr_code() == 1) {
                     tx.rollback();
-                    return response;
+                    return syncresponse;
                 }
             }
 
-            if (!json_quatrinhphucap.isEmpty()) {
-                JSONArray quatrinhphucaps = new JSONArray(json_quatrinhphucap);
-                for (int i = 0; i < quatrinhphucaps.length(); i++) {
-                    StoredProcedureQuery quatrinhphucapQuery = syncMsgService.storeProcedures(em, _phucaps, madonvi, quatrinhphucaps.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) quatrinhphucapQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
-            if (!json_quatrinhluong.isEmpty()) {
-                JSONArray quatrinhluongs = new JSONArray(json_quatrinhluong);
-                for (int i = 0; i < quatrinhluongs.length(); i++) {
-                    StoredProcedureQuery quatrinhluongQuery = syncMsgService.storeProcedures(em, _luongs, madonvi, quatrinhluongs.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) quatrinhluongQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
-            if (!json_trinhdodaotaoboiduong.isEmpty()) {
-                StoredProcedureQuery trinhdodaotaoboiduong = syncMsgService.storeProcedures(em, _trinhdodaotaoboiduong, madonvi, json_trinhdodaotaoboiduong);
-                response = getstoreProcedure((String) trinhdodaotaoboiduong.getOutputParameterValue("u_ret"));
-                if (response.getErr_code() == 1) {
+            if (objthongtinkhac != null && !objthongtinkhac.isEmpty()) {
+                syncresponse = syncService.syncThongtinkhac(em, madonvi, nhansu_id, objthongtinkhac);
+                if (syncresponse.getErr_code() == 1) {
                     tx.rollback();
-                    return response;
+                    if (em != null && em.isOpen()) em.close();
+                    return syncresponse;
                 }
             }
 
-            if (!json_tinhoc.isEmpty()) {
-                JSONArray tinhocs = new JSONArray(json_tinhoc);
-                for (int i = 0; i < tinhocs.length(); i++) {
-                    StoredProcedureQuery ngoainguQuery = syncMsgService.storeProcedures(em, _tinhocs, madonvi, tinhocs.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) ngoainguQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
-            if (!json_ngoaingu.isEmpty()) {
-                JSONArray ngoaingus = new JSONArray(json_ngoaingu);
-                for (int i = 0; i < ngoaingus.length(); i++) {
-                    StoredProcedureQuery ngoainguQuery = syncMsgService.storeProcedures(em, _ngoaingus, madonvi, ngoaingus.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) ngoainguQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
-            if (!json_quatrinhdaotaoboiduong.isEmpty()) {
-                JSONArray quatrinhdaotaoboiduongs = new JSONArray(json_quatrinhdaotaoboiduong);
-                for (int i = 0; i < quatrinhdaotaoboiduongs.length(); i++) {
-                    StoredProcedureQuery quatrinhdaotaoboiduongQuery = syncMsgService.storeProcedures(em, _daotaoboiduongs, madonvi, quatrinhdaotaoboiduongs.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) quatrinhdaotaoboiduongQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
-            if (!json_thongtinkhac.isEmpty()) {
-                StoredProcedureQuery thongtinkhacQuery = syncMsgService.storeProcedures(em, _thongtinkhac, madonvi, json_thongtinkhac);
-                response = getstoreProcedure((String) thongtinkhacQuery.getOutputParameterValue("u_ret"));
-                if (response.getErr_code() == 1) {
+            if (arrketquadanhgia != null && !arrketquadanhgia.isEmpty()) {
+                syncresponse = syncService.syncKetquadanhgaixeploai(em, madonvi, nhansu_id, arrketquadanhgia);
+                if (syncresponse.getErr_code() == 1) {
                     tx.rollback();
-                    return response;
+                    return syncresponse;
                 }
             }
-
-            if (!json_ketquadanhgia.isEmpty()) {
-                JSONArray ketquadanhgiaphanloais = new JSONArray(json_ketquadanhgia);
-                for (int i = 0; i < ketquadanhgiaphanloais.length(); i++) {
-                    StoredProcedureQuery ketquadanhgiaphanloaiQuery = syncMsgService.storeProcedures(em, _danhgiaphanloais, madonvi, ketquadanhgiaphanloais.getJSONObject(i).toString());
-                    response = getstoreProcedure((String) ketquadanhgiaphanloaiQuery.getOutputParameterValue("u_ret"));
-                    if (response.getErr_code() == 1) {
-                        tx.rollback();
-                        return response;
-                    }
-                }
-            }
-
             tx.commit();
-            em.close();
-            response = new Response("Cập nhật dữ liệu cán bộ, công chức, viên chức thành công", 0);
+            syncresponse = new SyncResponse(actiontype.equals("ADD") ? "Thêm mới dữ liệu cán bộ, công chức, viên chức thành công" : "Cập nhật dữ liệu cán bộ, công chức, viên chức thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json hồ sơ cán bộ, công chức, viên chức không đúng định dạng quy định!", 1);
         } catch (RuntimeException ex) {
-            response = new Response("Cập nhật dữ liệu cán bộ, công chức, viên chức không thành công: Stored procedure query  " + ex.getMessage(), 1);
+            syncresponse = new SyncResponse("Cập nhật dữ liệu cán bộ, công chức, viên chức không thành công: " + ex.getMessage() + "!", 1);
         } finally {
             if (tx != null && tx.isActive()) tx.rollback();
             if (em != null && em.isOpen()) em.close();
         }
-        return response;
+        return syncresponse;
     }
 
-    //    //thông tin chung
-//    public Response setThongtinchung(JSONObject thongtinchung, String madonvi, String sohieucbccvc_bndp) {
-//        Response response = null;
-//        try {
-//            thongtinchung.put("SoHieuCBCCVC_BNDP", sohieucbccvc_bndp);
-//            response = getstoreProcedure(_ns_thongtinchung, madonvi, thongtinchung.toString());
-//        } catch (Exception ex) {
-//            response = new Response("Thông tin chung " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //tuyển dụng, quá trình công tác
-//    public Response setTuyendungquatrinhcongtac(JSONObject tuyendungquatrinhcongtac, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            tuyendungquatrinhcongtac.put("NhanSu_Id", nhansu_id);
-//            response = getstoreProcedure(_ns_tuyendungquatrinhcongtac, madonvi, tuyendungquatrinhcongtac.toString());
-//        } catch (Exception ex) {
-//            response = new Response("Quá trình đào tạo bồi dưỡng " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //quá trình công tác
-//    public Response setQuatrinhcongtacs(JSONArray quatrinhcongtacs, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < quatrinhcongtacs.length(); i++) {
-//                JSONObject quatrinhcongtac = quatrinhcongtacs.getJSONObject(i);
-//                quatrinhcongtac.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_ns_quatrinhcongtac, madonvi, quatrinhcongtac.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Danh sách lương " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //luong phụ cấp chức vụ
-//    public Response setLuongphucapchucvu(JSONObject luongphucapchucvu, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            luongphucapchucvu.put("NhanSu_Id", nhansu_id);
-//            response = getstoreProcedure(_ns_luongphucap, madonvi, luongphucapchucvu.toString());
-//        } catch (Exception ex) {
-//            response = new Response("Quá trình đào tạo bồi dưỡng " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //quá trình phụ cấp
-//    public Response setQuatrinhphucap(JSONArray quatrinhphucaps, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < quatrinhphucaps.length(); i++) {
-//                JSONObject quatrinhphucap = quatrinhphucaps.getJSONObject(i);
-//                quatrinhphucap.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_phucap, madonvi, quatrinhphucap.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Danh sách lương " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //qua trình lương
-//    public Response setQuatrinhluong(JSONArray quatrinhluongs, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < quatrinhluongs.length(); i++) {
-//                JSONObject quatrinhluong = quatrinhluongs.getJSONObject(i);
-//                quatrinhluong.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_luong, madonvi, quatrinhluong.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Danh sách lương " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //đào tạo bồi dưỡng
-//    public Response setDaotaoboiduong(JSONObject daotaoboiduong, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            daotaoboiduong.put("NhanSu_Id", nhansu_id);
-//            response = getstoreProcedure(_ns_daotaoboiduong, madonvi, daotaoboiduong.toString());
-//        } catch (Exception ex) {
-//            response = new Response("Quá trình đào tạo bồi dưỡng " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //danh sách tin học
-//    public Response setTinhocs(JSONArray tinhocs, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < tinhocs.length(); i++) {
-//                JSONObject tinhoc = tinhocs.getJSONObject(i);
-//                tinhoc.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_tinhoc, madonvi, tinhoc.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Danh sách tin học " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //danh sách ngoại ngữ
-//    public Response setNgoaingus(JSONArray ngoaingus, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < ngoaingus.length(); i++) {
-//                JSONObject ngoaingu = ngoaingus.getJSONObject(i);
-//                ngoaingu.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_ngoaingu, madonvi, ngoaingu.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Danh sách ngoại ngữ " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //quá trình đào tạo bồi dưỡng
-//    public Response setQuatrinhdaotaoboiduongs(JSONArray quatrinhdaotaobuoiduongs, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < quatrinhdaotaobuoiduongs.length(); i++) {
-//                JSONObject quatrinhdaotaobuoiduong = quatrinhdaotaobuoiduongs.getJSONObject(i);
-//                quatrinhdaotaobuoiduong.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_daotaoboiduong, madonvi, quatrinhdaotaobuoiduong.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Quá trình đào tạo bồi dưỡng " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //thông tin khác
-//    public Response setThongtinkhac(JSONObject thongtinkhac, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            thongtinkhac.put("NhanSu_Id", nhansu_id);
-//            response = getstoreProcedure(_ns_thongtinkhac, madonvi, thongtinkhac.toString());
-//        } catch (Exception ex) {
-//            response = new Response("Thông tin khác " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //kết quả đanh giá phân loại
-//    public Response setKetquadanhgiaphanloais(JSONArray ketquadanhgiaphanloais, String madonvi, String nhansu_id) {
-//        Response response = null;
-//        try {
-//            for (int i = 0; i < ketquadanhgiaphanloais.length(); i++) {
-//                JSONObject ketquadanhgiaphanloai = ketquadanhgiaphanloais.getJSONObject(i);
-//                ketquadanhgiaphanloai.put("NhanSu_Id", nhansu_id);
-//                response = getstoreProcedure(_danhgiaphanloai, madonvi, ketquadanhgiaphanloai.toString());
-//                if (response.getErr_code() == 1)
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            response = new Response("Đánh giá phân loại " + ex.getMessage(), 1);
-//        }
-//        return response;
-//    }
-//
-//    //xóa hồ sơ nhân sự và các dữ liệu liên quan
-//    public ResponseEntity delHosonhansu(Response response, String madonvi, String sohieucbccvc_bndp) {
-//        try {
-//            getstoreProcedure(_xoahosonhansu, madonvi, sohieucbccvc_bndp);
-//            return ResponseEntity.ok(new Response(response.getMessage(), response.getErr_code()));
-//        } catch (Exception ex) {
-//            return ResponseEntity.ok(new Response("Xóa hồ sơ nhân sự " + ex.getMessage(), 1));
-//        }
-//    }
-//    //kiểm tra số hiệu cbccvc_bndp
-//    public Response selSohieuCbccvc_Bndp(String madonvi, String sohieucbccvc_bndp) {
-//        Response response = null;
-//        try {
-//            response = getstoreProcedure(_sohieucbccvc_bndp, madonvi, sohieucbccvc_bndp);
-//        } catch (Exception ex) {
-//            response = new Response("Tìm kiếm hồ sơ cbccvc bndp " + ex.getMessage(), 1);
-//        }
-//        return  response;
-//    }
-//
-//    // xử lý json trả về
-//    public Response getstoreProcedure(String storename, String madonvi, String json) {
-//        try {
-//            JSONObject retjson = new JSONObject(syncMsgService.callStoreProcedure(storename, madonvi, json));
-//            String mess = retjson.getString("MSG_TEXT");
-//            int err = retjson.getInt("MSG_CODE");
-//            String value = retjson.getString("VAL");
-//            return new Response(mess, err == 1 ? 0 : 1,value);
-//        } catch (Exception ex) {
-//            return new Response(ex.getMessage(), 1);
-//        }
-//    }
-    public Response getstoreProcedure(String json) {
+    public SyncResponse deleteServiceM0001(int nhansu_id, JSONObject objheader) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            JSONObject retjson = new JSONObject(json);
-            String mess = retjson.getString("MSG_TEXT");
-            int err = retjson.getInt("MSG_CODE");
-            String value = retjson.getString("VAL");
-            return new Response(mess, err == 1 ? 0 : 1, value);
-        } catch (Exception ex) {
-            return new Response(ex.getMessage(), 1);
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            JSONObject objdel = new JSONObject();
+            objdel.put("Nhansu_Id", nhansu_id);
+            objdel.put("HOSO_CBCCVC", 1);
+            objdel.put("DS_QUATRINH_CONGTAC", 1);
+            objdel.put("DS_QUATRINH_PHUCAP", 1);
+            objdel.put("DS_QUATRINH_LUONG", 1);
+            objdel.put("DS_TINHOC", 1);
+            objdel.put("DS_NGOAINGU", 1);
+            objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 1);
+            objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 1);
+            syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                return syncresponse;
+            }
+
+            tx.commit();
+            syncresponse = new SyncResponse("Xóa dữ liệu cán bộ, công chức, viên chức thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json hồ sơ cán bộ, công chức, viên chức không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Xóa dữ liệu cán bộ, công chức, viên chức không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
         }
+        return syncresponse;
+    }
+
+
+    public SyncResponse updateServicem0002(String actiontype, int nhansu_id, JSONObject objheader, JSONObject objtuyendungquatrinhcongtac, JSONArray arrquatrinhcongtac) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+
+            if (actiontype.equals("EDIT")) {
+                JSONObject objdel = new JSONObject();
+                objdel.put("Nhansu_Id", nhansu_id);
+                objdel.put("HOSO_CBCCVC", 0);
+                objdel.put("DS_QUATRINH_CONGTAC", arrquatrinhcongtac != null ? 1 : 0);
+                objdel.put("DS_QUATRINH_PHUCAP", 0);
+                objdel.put("DS_QUATRINH_LUONG", 0);
+                objdel.put("DS_TINHOC", 0);
+                objdel.put("DS_NGOAINGU", 0);
+                objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 0);
+                objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 0);
+                syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            if (objtuyendungquatrinhcongtac != null && !objtuyendungquatrinhcongtac.isEmpty()) {
+                syncresponse = syncService.syncTuyendungquatrinhcongtac(em, madonvi, nhansu_id, objtuyendungquatrinhcongtac, arrquatrinhcongtac);
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Cập nhật thông tin về tuyển dụng, quá trình công tác thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json tuyển dụng, quá trình công tác không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Cập nhật thông tin về tuyển dụng, quá trình công tác không thành công: " + ex.getMessage() + "!", 1);
+
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse deleteServiceM0002(int nhansu_id, JSONObject objheader, JSONArray arrquatrinhcongtac) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            JSONObject objdel = new JSONObject();
+            objdel.put("Nhansu_Id", nhansu_id);
+            objdel.put("HOSO_CBCCVC", 0);
+            objdel.put("DS_QUATRINH_CONGTAC", arrquatrinhcongtac.length() >= 0 ? 1 : 0);
+            objdel.put("DS_QUATRINH_PHUCAP", 0);
+            objdel.put("DS_QUATRINH_LUONG", 0);
+            objdel.put("DS_TINHOC", 0);
+            objdel.put("DS_NGOAINGU", 0);
+            objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 0);
+            objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 0);
+            syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                return syncresponse;
+            }
+
+            tx.commit();
+            syncresponse = new SyncResponse("Xóa thông tin về tuyển dụng, quá trình công tác thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json tuyển dụng, quá trình công tác không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Xóa thông tin về tuyển dụng, quá trình công tác không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse updateServicem0003(String actiontype, int nhansu_id, JSONObject objheader, JSONObject objluongphucapchucvu, JSONArray arrquatrinhphucap, JSONArray arrquatrinhluong) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+
+            if (actiontype.equals("EDIT")) {
+                JSONObject objdel = new JSONObject();
+                objdel.put("Nhansu_Id", nhansu_id);
+                objdel.put("HOSO_CBCCVC", 0);
+                objdel.put("DS_QUATRINH_CONGTAC", 0);
+                objdel.put("DS_QUATRINH_PHUCAP", arrquatrinhphucap != null ? 1 : 0);
+                objdel.put("DS_QUATRINH_LUONG", arrquatrinhluong != null ? 1 : 0);
+                objdel.put("DS_TINHOC", 0);
+                objdel.put("DS_NGOAINGU", 0);
+                objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 0);
+                objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 0);
+                syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            if (objluongphucapchucvu != null && !objluongphucapchucvu.isEmpty()) {
+                syncresponse = syncService.syncLuongphucapchucvu(em, madonvi, nhansu_id, objluongphucapchucvu, arrquatrinhphucap, arrquatrinhluong);
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Cập nhật thông tin về lương, phụ cấp, chức vụ thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json lương, phụ cấp, chức vụ không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Cập nhật thông tin về lương, phụ cấp, chức vụ không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse deleteServiceM0003(int nhansu_id, JSONObject objheader, JSONArray arrquatrinhphucap, JSONArray arrquatrinhluong) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            JSONObject objdel = new JSONObject();
+            objdel.put("Nhansu_Id", nhansu_id);
+            objdel.put("HOSO_CBCCVC", 0);
+            objdel.put("DS_QUATRINH_CONGTAC", 0);
+            objdel.put("DS_QUATRINH_PHUCAP", arrquatrinhphucap.length() >= 0 ? 1 : 0);
+            objdel.put("DS_QUATRINH_LUONG", arrquatrinhluong.length() >= 0 ? 1 : 0);
+            objdel.put("DS_TINHOC", 0);
+            objdel.put("DS_NGOAINGU", 0);
+            objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 0);
+            objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 0);
+            syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                return syncresponse;
+            }
+
+            tx.commit();
+            syncresponse = new SyncResponse("Xóa thông thông tin về lương, phụ cấp, chức vụ thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json lương, phụ cấp, chức vụ không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Xóa thông tin về lương, phụ cấp, chức vụ không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse updateServicem0004(String actiontype, int nhansu_id, JSONObject objheader, JSONObject objtrinhdodaotaoboiduong, JSONArray arrtinhoc, JSONArray arrngoaingu, JSONArray arrquatrinhdaotaoboiduong) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+
+            if (actiontype.equals("EDIT")) {
+                JSONObject objdel = new JSONObject();
+                objdel.put("Nhansu_Id", nhansu_id);
+                objdel.put("HOSO_CBCCVC", 0);
+                objdel.put("DS_QUATRINH_CONGTAC", 0);
+                objdel.put("DS_QUATRINH_PHUCAP", 0);
+                objdel.put("DS_QUATRINH_LUONG", 0);
+                objdel.put("DS_TINHOC", arrtinhoc != null ? 1 : 0);
+                objdel.put("DS_NGOAINGU", arrngoaingu != null ? 1 : 0);
+                objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", arrquatrinhdaotaoboiduong != null ? 1 : 0);
+                objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 0);
+                syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            if (objtrinhdodaotaoboiduong != null && !objtrinhdodaotaoboiduong.isEmpty()) {
+                syncresponse = syncService.syncTrinhdodaotaoboiduong(em, madonvi, nhansu_id, objtrinhdodaotaoboiduong, arrtinhoc, arrngoaingu, arrquatrinhdaotaoboiduong);
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Cập nhật thông tin trình độ, đào tạo, bồi dưỡng thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json trình độ, đào tao, bồi dưỡng không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Cập nhật thông tin trình độ, đào tạo, bồi dưỡng không thành công: " + ex.getMessage() + "!", 1);
+
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse deleteServiceM0004(int nhansu_id, JSONObject objheader, JSONArray arrtinhoc, JSONArray arrngoaingu, JSONArray arrquatrinhdaotaoboiduong) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            JSONObject objdel = new JSONObject();
+            objdel.put("Nhansu_Id", nhansu_id);
+            objdel.put("HOSO_CBCCVC", 0);
+            objdel.put("DS_QUATRINH_CONGTAC", 0);
+            objdel.put("DS_QUATRINH_PHUCAP", 0);
+            objdel.put("DS_QUATRINH_LUONG", 0);
+            objdel.put("DS_TINHOC", arrtinhoc.length() >= 0 ? 1 : 0);
+            objdel.put("DS_NGOAINGU", arrngoaingu.length() >= 0 ? 1 : 0);
+            objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", arrquatrinhdaotaoboiduong.length() >= 0 ? 1 : 0);
+            objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", 0);
+            syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                return syncresponse;
+            }
+
+            tx.commit();
+            syncresponse = new SyncResponse("Xóa thông tin trình độ, đào tạo, bồi dưỡng thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json trình độ, đào tao, bồi dưỡng không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Xóa thông tin trình độ, đào tạo, bồi dưỡng không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse updateServicem0005(String actiontype, int nhansu_id, JSONObject objheader, JSONObject objthongtinkhac) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+
+            if (objthongtinkhac != null && !objthongtinkhac.isEmpty()) {
+                syncresponse = syncService.syncThongtinkhac(em, madonvi, nhansu_id, objthongtinkhac);
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Cập nhật thông tin khác thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json thông tin khác không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Cập nhật thông tin khác không thành công: " + ex.getMessage() + "!", 1);
+
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse deleteServiceM0005(int nhansu_id, JSONObject objheader) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Không thể xóa thông tin khác do dữ liệu cùng thông tin hồ sơ chung, bạn có thể cập nhật giá trị rỗng cho thông tin khác!", 1);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json trình độ, đào tao, bồi dưỡng không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Xóa thông tin khác không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse updateServicem0006(String actiontype, int nhansu_id, JSONObject objheader, JSONArray arrketquadanhgia) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+
+            if (actiontype.equals("EDIT")) {
+                JSONObject objdel = new JSONObject();
+                objdel.put("Nhansu_Id", nhansu_id);
+                objdel.put("HOSO_CBCCVC", 0);
+                objdel.put("DS_QUATRINH_CONGTAC", 0);
+                objdel.put("DS_QUATRINH_PHUCAP", 0);
+                objdel.put("DS_QUATRINH_LUONG", 0);
+                objdel.put("DS_TINHOC", 0);
+                objdel.put("DS_NGOAINGU", 0);
+                objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 0);
+                objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", arrketquadanhgia != null ? 1 : 0);
+                syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            if (arrketquadanhgia != null && !arrketquadanhgia.isEmpty()) {
+                syncresponse = syncService.syncKetquadanhgaixeploai(em, madonvi, nhansu_id, arrketquadanhgia);
+                if (syncresponse.getErr_code() == 1) {
+                    tx.rollback();
+                    return syncresponse;
+                }
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Cập nhật kết quả đánh giá, xếp loại thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json kết quả đánh giá xếp loại không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Cập nhật kết quả đánh giá, xếp loại không thành công: " + ex.getMessage() + "!", 1);
+
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    public SyncResponse deleteServiceM0006(int nhansu_id, JSONObject objheader, JSONArray arrketquadanhgia) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+
+            syncresponse = syncService.syncTieude(em, madonvi, objheader);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                if (em != null && em.isOpen()) em.close();
+                return syncresponse;
+            }
+            JSONObject objdel = new JSONObject();
+            objdel.put("Nhansu_Id", nhansu_id);
+            objdel.put("HOSO_CBCCVC", 0);
+            objdel.put("DS_QUATRINH_CONGTAC", 0);
+            objdel.put("DS_QUATRINH_PHUCAP", 0);
+            objdel.put("DS_QUATRINH_LUONG", 0);
+            objdel.put("DS_TINHOC", 0);
+            objdel.put("DS_NGOAINGU", 0);
+            objdel.put("DS_QUATRINH_DAOTAO_BOIDUONG", 0);
+            objdel.put("DS_KETQUA_DANHGIA_PHANLOAI", arrketquadanhgia.length() >= 0 ? 1 : 0);
+            syncresponse = syncService.syncXoadulieu(em, madonvi, objdel.toString());
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                return syncresponse;
+            }
+
+            tx.commit();
+            syncresponse = new SyncResponse("Xóa kết quả đánh giá, xếp loại thành công", 0);
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json kết quả đánh giá xếp loại không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Xóa kết quả đánh giá, xếp loại thành công không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
+    }
+
+    //kiểm tra số hiệu cbccvc_bndp
+    public SyncResponse callStoreProcedureServicemId(String madonvi, String sohieucbccvc_bndp) {
+        SyncResponse syncresponse = null;
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+            syncresponse = syncService.syncSohieuCbccvcBndp(em, madonvi, sohieucbccvc_bndp);
+            if (syncresponse.getErr_code() == 1) {
+                tx.rollback();
+                return syncresponse;
+            }
+            tx.commit();
+            syncresponse = new SyncResponse("Kiểm tra hồ sơ nhân sự không thành công thành công", 0, syncresponse.getValue());
+        } catch (JSONException ex) {
+            syncresponse = new SyncResponse("Cấu trúc gói tin json kiểm tra số hiệu cán bộ, công chức, viên chức bộ nghành địa phương không đúng định dạng quy định!", 1);
+        } catch (RuntimeException ex) {
+            syncresponse = new SyncResponse("Kiểm tra hồ sơ nhân sự không thành không thành công: " + ex.getMessage() + "!", 1);
+        } finally {
+            if (tx != null && tx.isActive()) tx.rollback();
+            if (em != null && em.isOpen()) em.close();
+        }
+        return syncresponse;
     }
 }

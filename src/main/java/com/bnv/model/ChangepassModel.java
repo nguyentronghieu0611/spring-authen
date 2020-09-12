@@ -1,9 +1,24 @@
 package com.bnv.model;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 public class ChangepassModel {
+
+    @NotNull(message = "Vui lòng nhập username")
+    @NotEmpty(message = "Username không được trống")
     private String username;
+
+    @NotNull(message = "Vui lòng nhập mật khẩu hiện tại")
+    @NotEmpty(message = "Mật khẩu hiện tại không được trống")
     private String current_password;
+
+    @NotNull(message = "Vui lòng nhập mật khẩu mới")
+    @NotEmpty(message = "Mật khẩu mới không được trống")
     private String new_password;
+
+    @NotNull(message = "Vui lòng nhập lại mật khẩu mới")
+    @NotEmpty(message = "Mật khẩu nhập lại không được trống")
     private String retype_password;
 
     public String getUsername() {

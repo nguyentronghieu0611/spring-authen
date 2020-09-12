@@ -1,32 +1,21 @@
 package com.bnv.controller;
 
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
-
+import com.bnv.config.JwtTokenUtil;
 import com.bnv.model.*;
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
-import org.hibernate.exception.ConstraintViolationException;
+import com.bnv.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import com.bnv.service.JwtUserDetailsService;
+import org.springframework.web.bind.annotation.*;
 
-import com.bnv.config.JwtTokenUtil;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin
@@ -44,7 +33,7 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) {
+    public ResponseEntity<?> createAuthenticationToken(@Valid @RequestBody JwtRequest authenticationRequest) {
         try {
             authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
@@ -66,7 +55,7 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> saveUser(@RequestBody UserDTO user) {
+    public ResponseEntity<?> saveUser(@Valid @RequestBody UserDTO user) {
         try {
             userDetailsService.save(user);
             return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
@@ -99,13 +88,25 @@ public class JwtAuthenticationController {
         }
     }
 
+    @RequestMapping(value = "/mobi", method = RequestMethod.POST)
+    public ResponseEntity<?> mobi() {
+        try {
+            return ResponseEntity.ok(new Response("Đăng ký thành công!", 0));
+        } catch (Exception e) {
+            if (e.getMessage().toLowerCase().contains("constraint"))
+                return (ResponseEntity<?>) ResponseEntity.ok(new Response("Tên tài khoản đã được sử dụng!", 1));
+            else
+                return (ResponseEntity<?>) ResponseEntity.ok(new Response(e.getMessage(), 1));
+        }
+    }
+
     private void authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         } catch (DisabledException e) {
-            throw new Exception("Tài khoản vô hiệu hóa!", e);
+            throw new Exception("Xác thực không thành công. Tài khoản đã bị vô hiệu hóa!", e);
         } catch (BadCredentialsException e) {
-            throw new Exception("Xác thực không thành công!", e);
+            throw new Exception("Xác thực không thành công. Tên đăng nhập hoặc mật khẩu không chính xác!", e);
         }
     }
 }
