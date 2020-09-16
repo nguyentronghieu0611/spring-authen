@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5dfdda98-fcde-4763-88bf-57982758bead" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bnv/service/SyncService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bnv/service/SyncService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,7 +151,7 @@
       <workItem from="1599939466453" duration="122000" />
       <workItem from="1600105545715" duration="951000" />
       <workItem from="1600191888419" duration="561000" />
-      <workItem from="1600275287418" duration="5707000" />
+      <workItem from="1600275287418" duration="5741000" />
     </task>
     <servers />
   </component>

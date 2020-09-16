@@ -127,7 +127,7 @@ public class SyncService {
                 madonvisudung = true;
             else if (validateCategory(dmdonvicap4, objthongtinchung.getString("MaDonviSuDung")))
                 madonvisudung = true;
-            else if (validateCategory(dmdonvicapdonvi, objthongtinchung.getString("MaDonviSuDung")))
+            else if (validateCategory(dmdonvicapdonvi, objthongtinchung.getString("MaDonviSuDung"))) 
                 madonvisudung = true;
 
         }
