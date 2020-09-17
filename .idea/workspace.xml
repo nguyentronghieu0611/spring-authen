@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5dfdda98-fcde-4763-88bf-57982758bead" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bnv/service/SyncService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bnv/service/SyncService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +67,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="TEXT" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../lgsp-admin" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -151,7 +152,8 @@
       <workItem from="1599939466453" duration="122000" />
       <workItem from="1600105545715" duration="951000" />
       <workItem from="1600191888419" duration="561000" />
-      <workItem from="1600275287418" duration="5741000" />
+      <workItem from="1600275287418" duration="6036000" />
+      <workItem from="1600356224445" duration="2707000" />
     </task>
     <servers />
   </component>
@@ -171,6 +173,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="414" y="178" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1598799203510" />
+    <state x="737" y="330" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1600366982387">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="737" y="330" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1600366982387" />
     <state x="765" y="239" key="#com.intellij.ide.util.MemberChooser" timestamp="1598634745530">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -197,30 +203,30 @@
     </state>
     <state width="447" height="327" key="DebuggerActiveHint/0.0.1366.728@0.0.1366.728" timestamp="1598725308316" />
     <state width="457" height="466" key="DebuggerActiveHint/0.0.1920.1040@0.0.1920.1040" timestamp="1599502883098" />
-    <state x="740" y="278" key="FileChooserDialogImpl" timestamp="1599939588168">
+    <state x="740" y="278" key="FileChooserDialogImpl" timestamp="1600356256067">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="740" y="278" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1599939588168" />
-    <state width="1877" height="222" key="GridCell.Tab.0.bottom" timestamp="1600280709613">
+    <state x="740" y="278" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1600356256067" />
+    <state width="1877" height="222" key="GridCell.Tab.0.bottom" timestamp="1600282264225">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1323" height="106" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1598730128763" />
-    <state width="1877" height="222" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1600280709613" />
-    <state width="1877" height="222" key="GridCell.Tab.0.center" timestamp="1600280709613">
+    <state width="1877" height="222" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1600282264225" />
+    <state width="1877" height="222" key="GridCell.Tab.0.center" timestamp="1600282264225">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1323" height="106" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1598730128763" />
-    <state width="1877" height="222" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1600280709613" />
-    <state width="1877" height="222" key="GridCell.Tab.0.left" timestamp="1600280709613">
+    <state width="1877" height="222" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1600282264225" />
+    <state width="1877" height="222" key="GridCell.Tab.0.left" timestamp="1600282264225">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1323" height="106" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1598730128762" />
-    <state width="1877" height="222" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1600280709613" />
-    <state width="1877" height="222" key="GridCell.Tab.0.right" timestamp="1600280709613">
+    <state width="1877" height="222" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1600282264225" />
+    <state width="1877" height="222" key="GridCell.Tab.0.right" timestamp="1600282264225">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1323" height="106" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1598730128763" />
-    <state width="1877" height="222" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1600280709613" />
+    <state width="1877" height="222" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1600282264225" />
     <state width="1877" height="315" key="GridCell.Tab.1.bottom" timestamp="1599504278940">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -278,10 +284,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1598985371206" />
-    <state x="661" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1600275836101">
+    <state x="661" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1600356228417">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="661" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1600275836101" />
+    <state x="661" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1600356228417" />
     <state x="36" y="38" width="1511" height="749" key="dock-window-1" timestamp="1598285315164">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
