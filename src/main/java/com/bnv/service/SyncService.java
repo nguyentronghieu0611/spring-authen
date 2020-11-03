@@ -82,6 +82,8 @@ public class SyncService {
     private List<String> dmdonvicap3;
     @Value("#{'${dm.donvi.cap4}'.split(',')}")
     private List<String> dmdonvicap4;
+    @Value("#{'${dm.donvi.capdonvi}'.split(',')}")
+    private List<String> dmdonvicapdonvi;
 
     private static String _header = "pkg_parse_json.parse_header_json";
     private static String _thongtinchung = "pkg_parse_json.parse_ns_thongtinchung_json";
@@ -125,6 +127,9 @@ public class SyncService {
                 madonvisudung = true;
             else if (validateCategory(dmdonvicap4, objthongtinchung.getString("MaDonviSuDung")))
                 madonvisudung = true;
+            else if (validateCategory(dmdonvicapdonvi, objthongtinchung.getString("MaDonviSuDung"))) 
+                madonvisudung = true;
+
         }
         if (!madonvisudung)
             return new SyncResponse("Mã đơn vị sử dụng không có hoặc không đúng với danh mục!", 1);
@@ -140,6 +145,8 @@ public class SyncService {
             else if (validateCategory(dmdonvicap3, objthongtinchung.getString("MaDonViQuanLy")))
                 madonviquanly = true;
             else if (validateCategory(dmdonvicap4, objthongtinchung.getString("MaDonViQuanLy")))
+                madonviquanly = true;
+            else if (validateCategory(dmdonvicapdonvi, objthongtinchung.getString("MaDonViQuanLy")))
                 madonviquanly = true;
         }
         if (!madonviquanly)
